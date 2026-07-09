@@ -48,11 +48,10 @@
     SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxF1e0fB9v-G_9WxA43-A6Hc4gKfC6r1LAl6nRbAECwYzIOgatWjElKhdRWycIhmrgtbQ/exec"
   };
 </script>
-  
 <script>
-// ════════════════════════════════════════════════════════════════�[...]
+// ═══════════════════════════════════════════════════════════════════════════
 // نظام المشرفين والصلاحيات — Zam Supervisor Auth System
-// ════════════════════════════════════════════════════════════════�[...]
+// ═══════════════════════════════════════════════════════════════════════════
 
 // ── المشرف الافتراضي (الإدارة) ──
 const DEFAULT_SUPERVISORS = [
@@ -176,9 +175,9 @@ function hasPermission(role) {
   return CURRENT_SUPERVISOR && CURRENT_SUPERVISOR.permissions.includes(role);
 }
 
-// ════════════════════════════════════════════════════════════════[...]
+// ═══════════════════════════════════════════════════════════════════════════
 // لوحة إدارة المشرفين (داخل لوحة الإدارة)
-// ════════════════════════════════════════════════════════════════[...]
+// ═══════════════════════════════════════════════════════════════════════════
 
 // ── فتح لوحة إدارة المشرفين ──
 function openSupervisorManagement() {
@@ -200,12 +199,12 @@ function openSupervisorManagement() {
         <div class="space-y-3">
           <div>
             <label class="block text-xs font-semibold text-textMuted mb-1">اسم المشرف *</label>
-            <input type="text" id="new-supervisor-name" class="w-full px-3 py-2 bg-foam border border-borderWarm rounded-button text-sm focus:border-gold outline-none" placeholder="مثال: أح[...]
+            <input type="text" id="new-supervisor-name" class="w-full px-3 py-2 bg-foam border border-borderWarm rounded-button text-sm focus:border-gold outline-none" placeholder="مثال: أحمد محمد">
           </div>
           
           <div>
             <label class="block text-xs font-semibold text-textMuted mb-1">رمز الدخول (4 أرقام) *</label>
-            <input type="password" id="new-supervisor-pin" maxlength="4" class="w-full px-3 py-2 bg-foam border border-borderWarm rounded-button text-sm text-center tracking-widest focus:border-g[...]
+            <input type="password" id="new-supervisor-pin" maxlength="4" class="w-full px-3 py-2 bg-foam border border-borderWarm rounded-button text-sm text-center tracking-widest focus:border-gold outline-none" placeholder="••••">
           </div>
           
           <div>
@@ -361,28 +360,6 @@ async function syncSupervisorsToCloud() {
 }
 #pdf-print-frame { display: none; }
 </style>
-
-<!-- Toast styles: base + .show (يضمن ظهور التوست بشكل صحيح عند إضافة الكلاس) -->
-<style>
-  /* Toast base — مخفي افتراضياً */
-  #system-toast-notif {
-    position: fixed;
-    left: 50%;
-    bottom: 20px;
-    transform: translate(-50%, 10px);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .22s ease, transform .22s ease;
-    z-index: 9999;
-  }
-
-  /* حالة الإظهار */
-  #system-toast-notif.show {
-    opacity: 1 !important;
-    transform: translate(-50%, 0) !important;
-    pointer-events: auto !important;
-  }
-</style>
 </head>
 <body class="bg-canvasBg text-textDark min-height-screen flex justify-center items-start py-8 px-4 sm:px-6">
 
@@ -400,4 +377,1583 @@ async function syncSupervisorsToCloud() {
         <p class="text-xs text-goldLight font-medium mt-1">منصة التقييم والتحكم في كفاءة الأداء التشغيلي</p>
       </div>
     </div>
-    <button class="bg-white/10 hover:bg-white/20 text-cream border border-cream/20 px-5 py-2.5 rounded-button text-sm font-semibold transition-all duration-200 flex items-center gap-2" onclick="t[...] 
+    <button class="bg-white/10 hover:bg-white/20 text-cream border border-cream/20 px-5 py-2.5 rounded-button text-sm font-semibold transition-all duration-200 flex items-center gap-2" onclick="triggerAdminLock()">
+      ⚙️ لوحة التحكم للإدارة
+    </button>
+  </div>
+
+  <div class="flex flex-col sm:flex-row border-b border-borderWarm" id="steps-row">
+    <div class="flex-1 flex items-center gap-3 p-4 justify-center sm:justify-start border-b sm:border-b-0 sm:border-l border-borderWarm transition-all duration-300 bg-foam text-coffee font-semibold" id="node1">
+      <span class="w-7 h-7 rounded-full bg-coffee text-cream flex items-center justify-center text-xs font-bold" id="node-num1">1</span>
+      <span class="text-xs sm:text-sm">بيانات الموظف الأساسية</span>
+    </div>
+    <div class="flex-1 flex items-center gap-3 p-4 justify-center sm:justify-start border-b sm:border-b-0 sm:border-l border-borderWarm transition-all duration-300 text-textMuted font-medium" id="node2">
+      <span class="w-7 h-7 rounded-full bg-borderWarm text-textMuted flex items-center justify-center text-xs font-bold" id="node-num2">2</span>
+      <span class="text-xs sm:text-sm">بنود ومقاييس التقييم</span>
+    </div>
+    <div class="flex-1 flex items-center gap-3 p-4 justify-center sm:justify-start transition-all duration-300 text-textMuted font-medium" id="node3">
+      <span class="w-7 h-7 rounded-full bg-borderWarm text-textMuted flex items-center justify-center text-xs font-bold" id="node-num3">3</span>
+      <span class="text-xs sm:text-sm">تأكيد الحفظ والإرسال</span>
+    </div>
+  </div>
+
+  <div class="p-6 sm:p-8">
+    <!-- STEP 1: Employee Credentials -->
+    <div id="step-one-view" class="space-y-6">
+      <div class="bg-white border border-borderWarm rounded-premium p-6 space-y-6">
+        <h2 class="text-base font-bold text-coffee flex items-center gap-2 border-b border-borderWarm pb-3">
+          <span>👤</span> تفاصيل الموظف والمسؤول المقيّم
+        </h2>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-textMuted">الرقم الوظيفي *</label>
+            <input type="text" id="employee-id" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold outline-none transition-all" placeholder="مثال: 1054">
+          </div>
+          <div class="space-y-2 sm:col-span-2">
+            <label class="block text-xs font-semibold text-textMuted">اسم الموظف الخاضع للتقييم *</label>
+            <input type="text" id="employee-full-name" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold outline-none transition-all" placeholder="الاسم الثنائي أو الثلاثي">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-textMuted">رقم الواتساب الخاص بالموظف *</label>
+            <input type="tel" id="employee-phone" dir="ltr" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold outline-none transition-all text-right" placeholder="05XXXXXXXX">
+          </div>
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-textMuted">الفرع *</label>
+            <div class="space-y-2">
+              <select id="employee-branch" onchange="toggleCustomBranch()" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold outline-none transition-all appearance-none cursor-pointer">
+                <option value="">اختر فرع الموظف</option>
+                <option value="الفرع الرئيسي">1. الفرع الرئيسي</option>
+                <option value="فرع البلد">2. فرع البلد</option>
+                <option value="فرع الحي">3. فرع الحي</option>
+                <option value="فرع المنح">4. فرع المنح</option>
+                <option value="فرع تجربة زام">5. فرع تجربة زام</option>
+                <option value="فرع البرج">6. فرع البرج</option>
+                <option value="الايفنتات">7. الايفنتات</option>
+                <option value="other">8. أخرى (إدخال يدوي)</option>
+              </select>
+              <input type="text" id="custom-branch-input" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold outline-none transition-all hidden" placeholder="اكتب اسم الفرع هنا...">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-textMuted">شهر وسنة التقييم *</label>
+            <input type="month" id="evaluation-period" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all">
+          </div>
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-textMuted">اسم المشرف المقيّم *</label>
+            <input type="text" id="evaluator-full-name" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all" placeholder="اسمك الثنائي">
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-borderWarm rounded-premium p-6 space-y-4">
+        <h2 class="text-base font-bold text-coffee flex items-center gap-2 border-b border-borderWarm pb-3">
+          <span>💼</span> تحديد الفئة والمسار الوظيفي للموظف
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="role-toggle border-2 border-borderWarm bg-foam p-4 sm:p-5 rounded-premium text-center cursor-pointer transition-all hover:border-gold hover:bg-white" data-role="barista" onclick="selectRoleTrack(this)">
+            <div class="text-2xl sm:text-3xl mb-2">☕</div>
+            <div class="text-xs sm:text-sm font-bold text-coffee">باريستا / كاشير</div>
+          </div>
+          <div class="role-toggle border-2 border-borderWarm bg-foam p-4 sm:p-5 rounded-premium text-center cursor-pointer transition-all hover:border-gold hover:bg-white" data-role="waiter" onclick="selectRoleTrack(this)">
+            <div class="text-2xl sm:text-3xl mb-2">🍽️</div>
+            <div class="text-xs sm:text-sm font-bold text-coffee">ويتر / خدمة</div>
+          </div>
+          <div class="role-toggle border-2 border-borderWarm bg-foam p-4 sm:p-5 rounded-premium text-center cursor-pointer transition-all hover:border-gold hover:bg-white" data-role="kitchen" onclick="selectRoleTrack(this)">
+            <div class="text-2xl sm:text-3xl mb-2">👨‍🍳</div>
+            <div class="text-xs sm:text-sm font-bold text-coffee">مطبخ</div>
+          </div>
+          <div class="role-toggle border-2 border-borderWarm bg-foam p-4 sm:p-5 rounded-premium text-center cursor-pointer transition-all hover:border-gold hover:bg-white" data-role="supervisor" onclick="selectRoleTrack(this)">
+            <div class="text-2xl sm:text-3xl mb-2">🧑‍💼</div>
+            <div class="text-xs sm:text-sm font-bold text-coffee">مشرف شيفت</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button class="bg-coffee hover:bg-espresso text-cream font-bold px-8 py-3.5 rounded-button shadow-sm hover:shadow transition-all duration-200" onclick="proceedToStepTwo()">الخطوة التالية ←</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Main Dynamic Evaluation Criteria Panel -->
+    <div id="step-two-view" class="space-y-6" style="display:none;">
+      <!-- شريط إنجاز بنود التقييم الحديث المسطح -->
+      <div class="bg-white border border-borderWarm rounded-premium p-5 space-y-3">
+        <div class="flex justify-between items-center text-xs font-bold text-textMuted">
+          <span id="criteria-progress-text">0 من 0 بند مكتمل</span>
+          <span id="criteria-progress-percentage" class="text-gold">0%</span>
+        </div>
+        <div class="h-2 bg-foam rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-l from-gold to-goldLight rounded-full transition-all duration-300" id="fill-progress-bar" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- بنود التقييم المضافة ديناميكياً -->
+      <div id="dynamic-criteria-rack" class="space-y-6"></div>
+
+      <!-- نقاط القوة والتطوير المستقبلي -->
+      <div class="bg-white border border-borderWarm rounded-premium p-6 space-y-4">
+        <h2 class="text-base font-bold text-coffee flex items-center gap-2 border-b border-borderWarm pb-3">
+          <span>📝</span> مرئيات إضافية وتوجيهات للأداء
+        </h2>
+        <div class="space-y-4">
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-textMuted">نقاط القوة الأساسية والمميزة للموظف</label>
+            <textarea id="notable-strengths" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all h-24 resize-none" placeholder="اكتب نقاط القوة والتميز لديه هذا الشهر..."></textarea>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-textMuted">مجالات التطوير المهني المقترحة</label>
+            <textarea id="development-areas" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all h-24 resize-none" placeholder="اكتب التوجيهات والمهارات التي يحتاج لتطويرها..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-foam border border-borderWarm rounded-premium p-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+        <div class="sm:border-l border-borderWarm/80 last:border-l-0 py-2">
+          <div class="text-3xl font-extrabold text-coffee" id="monitor-score">—</div>
+          <div class="text-xs font-bold text-textMuted mt-1">النتيجة التراكمية</div>
+        </div>
+        <div class="sm:border-l border-borderWarm/80 last:border-l-0 py-2">
+          <div class="text-3xl font-extrabold text-coffee" id="monitor-count">0</div>
+          <div class="text-xs font-bold text-textMuted mt-1">البنود المكتملة</div>
+        </div>
+        <div class="py-2">
+          <div class="text-lg font-bold text-gold" id="monitor-grade">—</div>
+          <div class="text-xs font-bold text-textMuted mt-1">التقدير المتوقع</div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row justify-between gap-4 pt-2">
+        <button class="border border-borderWarm hover:bg-foam text-textMuted font-bold px-6 py-3.5 rounded-button transition-all duration-200" onclick="revertToStepOne()">← رجوع لتعديل البيانات</button>
+        <button class="bg-coffee hover:bg-espresso text-cream font-bold px-8 py-3.5 rounded-button shadow-sm hover:shadow transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed" id="final-submit-btn" onclick="commitEvaluationSubmission()" disabled>تأكيد وإرسال التقييم 🚀</button>
+      </div>
+    </div>
+
+    <!-- شاشة إتمام العملية بنجاح تام -->
+    <div class="success-screen-card hidden text-center py-10" id="evaluation-success-card">
+      <div class="w-16 h-16 bg-successGreen/10 text-successGreen rounded-full flex items-center justify-center text-3xl mx-auto mb-6">✓</div>
+      <h2 class="text-xl font-bold text-coffee mb-2">تم حفظ التقييم بنجاح تام</h2>
+      <p class="text-sm text-textMuted mb-6">تم تسجيل بيانات التقييم وتحديث قاعدة البيانات السحابية المركزية لـ زام.</p>
+      
+      <div class="bg-foam border border-borderWarm rounded-premium p-6 inline-block text-right min-w-[280px] sm:min-w-[360px] mb-8 space-y-2" id="summary-meta-rack"></div>
+      
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <button class="w-full sm:w-auto bg-coffee hover:bg-espresso text-cream font-bold px-8 py-3.5 rounded-button shadow-sm transition-all flex items-center justify-center gap-2" id="pdf-download-btn">
+          📄 تحميل نسخة PDF
+        </button>
+        <button class="w-full sm:w-auto bg-[#25D366] hover:bg-[#128C7E] text-white font-bold px-8 py-3.5 rounded-button shadow-sm transition-all flex items-center justify-center gap-2" id="whatsapp-share-btn">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          إرسال PDF للموظف واتساب
+        </button>
+        <button class="w-full sm:w-auto border border-borderWarm hover:bg-foam text-textMuted font-bold px-8 py-3.5 rounded-button shadow-sm transition-all" onclick="initiateFreshForm()">تقييم موظف جديد 🔄</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ شاشات التغطية والنوافذ المنبثقة ════════ -->
+
+<!-- التغطية لشاشات التحميل والمزامنة السحابية -->
+<div class="system-overlay hidden fixed inset-0 bg-coffee/80 backdrop-blur-sm z-[200] flex flex-col items-center justify-center gap-4 text-cream" id="global-wait-overlay">
+  <div class="spinner-element"></div>
+  <p id="wait-message-holder" class="font-semibold text-sm">جارٍ مزامنة إعدادات البنود وسحب السجلات السحابية...</p>
+</div>
+
+<div class="system-overlay hidden fixed inset-0 bg-coffee/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4" id="admin-security-overlay">
+  <div class="bg-white border border-borderWarm w-full max-w-sm rounded-premium p-6 space-y-6 shadow-xl text-center">
+    <div>
+      <h2 class="text-lg font-bold text-coffee">الوصول للوحة الإدارة</h2>
+      <p class="text-xs text-textMuted mt-1">أدخل رمز المرور ثم اختر القسم المطلوب</p>
+    </div>
+    
+    <div class="space-y-2 text-right">
+      <label class="block text-xs font-semibold text-textMuted text-center">رمز المرور</label>
+      <input type="password" id="admin-password-input" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-center text-xl font-bold text-coffee tracking-widest focus:border-gold outline-none transition-all" placeholder="••••">
+    </div>
+    
+    <!-- الأزرار الثلاثة تظهر بعد التحقق -->
+    <div id="admin-menu-buttons" class="hidden space-y-3">
+      <button onclick="openAdminSection('criteria')" class="w-full bg-coffee hover:bg-espresso text-cream font-bold py-3 rounded-button transition-all text-sm flex items-center justify-center gap-2">
+        ⚙️ إعداد وإدارة صفحات التقييم
+      </button>
+      <button onclick="openAdminSection('dashboard')" class="w-full bg-gold hover:bg-gold/90 text-white font-bold py-3 rounded-button transition-all text-sm flex items-center justify-center gap-2">
+        📊 الداشبورد والإحصائيات
+      </button>
+      <button onclick="openAdminSection('supervisors')" class="w-full bg-successGreen hover:bg-successGreen/90 text-white font-bold py-3 rounded-button transition-all text-sm flex items-center justify-center gap-2">
+        🔐 إدارة صلاحيات الدخول
+      </button>
+    </div>
+    
+    <div class="flex gap-3" id="admin-verify-row">
+      <button class="flex-1 border border-borderWarm hover:bg-foam text-textMuted font-bold py-3 rounded-button transition-all text-sm" onclick="dismissAdminLock()">إلغاء</button>
+      <button class="flex-1 bg-coffee hover:bg-espresso text-cream font-bold py-3 rounded-button transition-all text-sm" onclick="verifyAdminGate()">تأكيد الدخول</button>
+    </div>
+  </div>
+</div>
+
+<!-- لوحة الإدارة الكبرى والداشبورد للتقييمات المتقدمة -->
+<div class="system-overlay hidden fixed inset-0 bg-coffee/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4" id="admin-panel-overlay">
+  <div class="bg-white border border-borderWarm w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-premium p-6 sm:p-8 space-y-6 shadow-2xl text-right">
+    
+    <div class="flex justify-between items-center border-b border-borderWarm pb-4">
+      <div>
+        <h2 class="text-lg font-bold text-coffee">⚙️ لوحة الإدارة والتحكم ببنية التقييمات</h2>
+        <p class="text-xs text-successGreen font-bold mt-1">● المزامنة السحابية التلقائية نشطة</p>
+      </div>
+      <button class="border border-borderWarm hover:bg-foam text-textMuted px-4 py-2 rounded-button text-xs font-bold transition-all" onclick="dismissAdminPanel()">إغلاق وحفظ</button>
+    </div>
+
+       <!-- ألسنة التبويبات للفرز والداشبورد -->
+    <div class="flex flex-col sm:flex-row gap-2 bg-foam p-1.5 rounded-premium">
+      <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all bg-white shadow-sm text-coffee" onclick="switchAdminWorkspace('barista', this)">☕ باريستا/كاشير</button>
+      <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white" onclick="switchAdminWorkspace('waiter', this)">🍽️ ويتر</button>
+      <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white" onclick="switchAdminWorkspace('kitchen', this)">👨‍🍳 المطبخ</button>
+      <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white" onclick="switchAdminWorkspace('supervisor', this)">🧑‍💼 المشرفين</button>
+      <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white border border-gold/30 bg-gold/5" onclick="loadPerformanceAnalytics(this)">📊 الداشبورد</button>
+      <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white" onclick="openSupervisorManagementTab(this)">🔐 إدارة المشرفين</button>
+    </div>
+
+    <!-- حاوية عرض البنود أو الرسوم البيانية -->
+    <div id="admin-workspace-rack" class="max-h-[50vh] overflow-y-auto space-y-4"></div>
+  </div>
+</div>
+
+<div class="system-overlay hidden fixed inset-0 bg-coffee/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4" id="new-item-overlay">
+  <div class="bg-white border border-borderWarm w-full max-w-md rounded-premium p-6 space-y-6 shadow-xl text-right">
+    <div>
+      <h2 class="text-base font-bold text-coffee">إضافة بند تقييم جديد</h2>
+      <p class="text-xs text-textMuted mt-1">سيتم إضافة هذا البند للقسم المحدد وسرعان ما ستتم مزامنته</p>
+    </div>
+    
+    <div class="space-y-4">
+      <div class="space-y-1">
+        <label class="block text-xs font-semibold text-textMuted">عنوان البند الأساسي *</label>
+        <input type="text" id="add-item-title-field" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold outline-none transition-all" placeholder="مثال: الالتزام بمعايرة طاحنة البن">
+      </div>
+      <div class="space-y-1">
+        <label class="block text-xs font-semibold text-textMuted">وصف البند التوجيهي (اختياري)</label>
+        <input type="text" id="add-item-desc-field" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold outline-none transition-all" placeholder="مثال: الحفاظ على الثبات والجرعة اليومية">
+      </div>
+    </div>
+    
+    <div class="flex gap-3">
+      <button class="flex-1 border border-borderWarm hover:bg-foam text-textMuted font-bold py-3 rounded-button transition-all text-sm" onclick="dismissNewItemForm()">إلغاء</button>
+      <button class="flex-1 bg-coffee hover:bg-espresso text-cream font-bold py-3 rounded-button transition-all text-sm" onclick="confirmNewItemAddition()">إضافة للبنية</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  // مصفوفة نصوص التقدير اللحظي المقابل لتقييم (1-10)
+  const SCORE_GRADES_10 = {
+    1: { text: "ضعيف جداً", class: "poor" },
+    2: { text: "ضعيف جداً", class: "poor" },
+    3: { text: "ضعيف", class: "poor" },
+    4: { text: "ضعيف", class: "poor" },
+    5: { text: "مقبول", class: "acceptable" },
+    6: { text: "مقبول", class: "acceptable" },
+    7: { text: "جيد جداً", class: "good" },
+    8: { text: "جيد جداً", class: "verygood" },
+    9: { text: "ممتاز", class: "excellent" },
+    10: { text: "مثالي / ممتاز مرتفع", class: "excellent" }
+  };
+
+  const DEFAULT_CRITERIA_MATRIX = {
+    barista: [
+      { section: "المظهر الخارجي والالتزام الإداري", weight: 20, items: [
+        { id: "b1", label: "هندام الموظف (الزي الرسمي، الكارت، النظافة الشخصية)", desc: "تقييم مبني على 5 أيام. عند وجود أي ملحوظة في أي يوم تُخصم درجتان." },
+        { id: "b2", label: "الحضور والانصراف والالتزام بالبصمة", desc: "الالتزام التام بالتوقيت وعدم التأخير." },
+        { id: "b3", label: "تنفيذ تعليمات الإدارة والمشرف المباشر", desc: "أداء مهام الفتح والإغلاق / تحضير طلبات / الجرد / أخرى." },
+        { id: "b4", label: "الوعي بأهم 5 أهداف للشيفت", desc: "التأكد من إلمام الموظف بأهداف وتوجيهات الشيفت الحالي." }
+      ]},
+      { section: "الخدمة، الكاشير والمبيعات", weight: 35, items: [
+        { id: "b5", label: "تطبيق بروتوكول الاحترام مع العملاء", desc: "اللباقة، الابتسامة، والترحيب المستمر للعميل." },
+        { id: "b6", label: "تطبيق استراتيجيات البيع الثلاثة (Upselling, Cross-selling, Portfolio)", desc: "يُقيّم خلال 5 عمليات بيع. (إذا لم يقف على الكاشير يُعطى درجة كاملة)." },
+        { id: "b7", label: "تنفيذ بروتوكول إعادة الطلب على الكاشير", desc: "التأكد من الطلب شفهياً مع العميل قبل الاعتماد." },
+        { id: "b8", label: "تسجيل العملاء في برنامج الولاء", desc: "شرح مزايا التطبيق للعملاء وحثهم على تحميل تطبيق زام." },
+        { id: "b9", label: "تحقيق أهداف تقييمات جوجل ماب", desc: "معدل 2 تقييم كحد أدنى في الشيفت." }
+      ]},
+      { section: "البار، الجودة وسلامة الغذاء", weight: 45, items: [
+        { id: "b10", label: "الإلمام بقائمة الطعام (المنيو) ومسببات الحساسية", desc: "البيع الوصفي والاختبار الشفهي/الشهري للمعلومات." },
+        { id: "b11", label: "المعلومات عن المحاصيل وعلوم القهوة", desc: "مدى معرفة الموظف بأصول وتفاصيل المحاصيل المقدمة." },
+        { id: "b12", label: "جودة تحضير الطلبات والمشروبات", desc: "التحضير التام طبقاً للمعمول به والمعتمد من التشغيل والجودة." },
+        { id: "b13", label: "مهارات اللاتيه آرت (Latte Art)", desc: "الدقة والتناسق في الرسم على كوب القهوة." },
+        { id: "b14", label: "التدقيق البصري وتصوير المنتج للتوصيل", desc: "مراجعة وتصوير الطلب قبل تسليمه لمندوبي التطبيقات." },
+        { id: "b15", label: "الهايجين وسلامة الغذاء", desc: "نظافة المعدات، البار، وعدم التلوث." }
+      ]}
+    ],
+    waiter: [
+      { section: "المظهر والانضباط", weight: 20, items: [
+        { id: "w1", label: "هندام الموظف (الزي الرسمي، الكارت، النظافة الشخصية)", desc: "تقييم مبني على 5 أيام. عند وجود أي ملحوظة في أي يوم تُخصم درجتان." },
+        { id: "w2", label: "الحضور والانصراف والالتزام بالبصمة", desc: "الالتزام التام بالوقت المحدد." },
+        { id: "w3", label: "تنفيذ تعليمات الإدارة والمشرف المباشر", desc: "الاستجابة الفورية للتوجيهات والمهام الموكلة." }
+      ]},
+      { section: "التجهيز والنظافة", weight: 30, items: [
+        { id: "w4", label: "الفتح الجيد للشيفت بناءً على التشيك ليست", desc: "التأكد من تنفيذ كافة خطوات تهيئة الصالة." },
+        { id: "w5", label: "نظافة المكان والمرافق", desc: "الحفاظ على رونق وبريق منطقة جلوس العملاء والمرافق." },
+        { id: "w6", label: "ترتيب وتنظيف الطاولات فور مغادرة الزبون", desc: "سرعة رفع الأكواب والصحون وتعقيم الطاولة للعميل التالي." }
+      ]},
+      { section: "الضيافة وخدمة العملاء", weight: 50, items: [
+        { id: "w7", label: "البشاشة الدائمة أثناء العمل", desc: "الحفاظ على روح إيجابية وابتسامة صادقة." },
+        { id: "w8", label: "اللباقة في التحدث مع الزبون", desc: "استخدام الألفاظ المهنية وتجنب الجدال." },
+        { id: "w9", label: "تطبيق بروتوكول الاحترام مع العملاء", desc: "الاستقبال الراقي، والتوديع وتلبية النداء فوراً." },
+        { id: "w10", label: "مراعاة ذوقيات التقديم عند تسليم الطلب", desc: "طريقة وضع الكوب/الطبق بالزاوية الصحيحة وباحترافية." }
+      ]}
+    ],
+    kitchen: [
+      { section: "السلامة، الهايجين والنظافة", weight: 35, items: [
+        { id: "k1", label: "النظافة الشخصية (Personal Hygiene)", desc: "غسل اليدين باستمرار، استخدام القفازات، نظافة الملابس/الزي." },
+        { id: "k2", label: "السلامة الغذائية وتخزين المكونات", desc: "التأكد من درجات الحرارة، نظام (FIFO)، وتجنب التلوث المتبادل." },
+        { id: "k3", label: "نظافة المطبخ والمعدات", desc: "التنظيف المستمر للأسطح، الثلاجات، الآلات، والتخلص الصحيح من النفايات." }
+      ]},
+      { section: "السرعة والجودة", weight: 35, items: [
+        { id: "k4", label: "سرعة تشغيل الطلبات والتحضير", desc: "الالتزام بالوقت المستهدف وتسليم الطلبات دون تأخير مبالغ فيه." },
+        { id: "k5", label: "الالتزام بالريسبي (الوصفة المعتمدة)", desc: "دقة المقادير وعدم التغيير في المكونات لضمان ثبات الجودة." },
+        { id: "k6", label: "الشكل النهائي للمنتجات وطريقة التقديم", desc: "التنسيق البصري للطبق/المنتج قبل خروجه من المطبخ." }
+      ]},
+      { section: "إدارة الموارد والتنظيم", weight: 30, items: [
+        { id: "k7", label: "تقليل الهدر والتحكم في التكلفة", desc: "استخدام المكونات بكفاءة عالية وعدم رمي الصالح منها." },
+        { id: "k8", label: "تنظيم وتخزين المكونات بدقة", desc: "ترتيب الرفوف، التسميات الواضحة، وتواريخ الصلاحية." },
+        { id: "k9", label: "تنفيذ تعليمات الفتح والإغلاق والمشرف", desc: "أداء المهام التشغيلية والجرد بدقة تامة." },
+        { id: "k10", label: "قيام بعمليات الديب كلين (Deep Clean)", desc: "تنفيذ عمليات التنظيف العميق الدوري للمعدات والأسطح والثلاجات وفق الجدول المعتمد." },
+        { id: "k11", label: "تنفيذ مهام الفتح والإغلاق داخل التشيك ليست", desc: "الالتزام التام ببنود تشيك ليست الفتح والإغلاق ومتابعة تنفيذها بدقة عند بداية ونهاية كل شيفت." }
+      ]}
+    ],
+    supervisor: [
+      { section: "الموارد البشرية وخدمة العملاء", weight: 30, items: [
+        { id: "s1", label: "خدمة العملاء وجودة تجربة العميل أثناء شفت المشرف", desc: "الرصد الفعلي والتقييم لجودة الخدمة وسرعة المعالجة أثناء تواجده بالفرع" },
+        { id: "s2", label: "حل المشاكل ومهارات فض النزاع", desc: "السرعة والاحترافية واللباقة في تسوية المشكلات مع الزوار أو بين أعضاء الفريق" },
+        { id: "s3", label: "حضور وانصراف والالتزام بالزي الرسمي وكارت العمل", desc: "الالتزام التام بالبصمة، المظهر الشخصي، تعليق كارت العمل، وتطبيق اللوائح" },
+        { id: "s4", label: "متوسط قبول وتجهيز الطلبات عبر جسر", desc: "مؤشرات السرعة وعدم تفويت أي طلب وارد عبر منصات الربط" },
+        { id: "s5", label: "تسليم تقييم الفريق وجداول العمل الأسبوعية", desc: "الالتزام بالتسليم بحد أقصى من تاريخ 25 إلى تاريخ 30 نهاية كل شهر" }
+      ]},
+      { section: "عمليات فودكس والمحاسبة والمالية", weight: 30, items: [
+        { id: "s6", label: "إدارة عمليات إرسال واستقبال التحويلات عبر فودكس", desc: "ضمان عدم وجود أي أخطاء أو طلبات معلقة نهائياً بين الفروع" },
+        { id: "s7", label: "تسجيل الهدر اليومي على نظام فودكس", desc: "التسجيل الدقيق للهدر اليومي دون أي أخطاء أو تأخير محاسبي" },
+        { id: "s8", label: "تنفيذ عمليات الجرد الدوري بشكل صحيح", desc: "إجراء عمليات جرد المخزون والبن في الأوقات المحددة ومطابقتها تماماً للواقع" }
+      ]},
+      { section: "التشغيل والعمليات اليومية والصيانة", weight: 40, items: [
+        { id: "s9", label: "تسليم تقرير المشرف اليومي الشامل", desc: "أن يتم التسليم بطريقة شاملة، صحيحة ومفصلة بنهاية كل شيفت" },
+        { id: "s10", label: "إرفاق وإثبات الهدر في الـ 3 مناطق المحددة", desc: "الموظف يرسل صورة بجروب العمل / المشرف يرفق في فودكس والتقرير اليومي معاً" },
+        { id: "s11", label: "قيادة الفريق لتوزيع المهام وتحقيق أهداف المبيعات", desc: "التحفيز المستمر وتوزيع مراكز العمل بذكاء خلال ساعات الذروة والشيفت" },
+        { id: "s12", label: "تنفيذ التشيك ليست لأداء مهام الفتح والإغلاق", desc: "التأكد الكامل من تطبيق كافة بنود التشيك ليست المعتمدة لسلامة ونظافة الفرع" },
+        { id: "s13", label: "تطبيق استراتيجيات البيع الثلاثية المعتمدة", desc: "تطبيق (upselling & cross selling & portfolio selling) مقاسة خلال 5 عمليات بيع عشوائية بنفس اليوم" },
+        { id: "s14", label: "سرعة ودقة تشغيل طلبات المحلي والسفري", desc: "الالتزام بالوقت القياسي لتسليم الطلبات وضمان مطابقتها ودقتها" },
+        { id: "s15", label: "تطبيق وتنفيذ معايير التشغيل المعتمدة", desc: "الامتثال التام لكتيب التشغيل والتعليمات المستمرة لإدارة العمليات" },
+        { id: "s16", label: "الالتزام بالتعليمات المتعلقة بالجودة والاستاندر الموحد", desc: "ثبات مذاق وجودة القهوة، طريقة تقديم المأكولات والمشروبات" },
+        { id: "s17", label: "نظافة الفرع والبار والمرافق والصالة الخارجية", desc: "الحفاظ على المظهر اللامع لكافة المرافق، المقاعد، الجدران، ومنطقة البار" },
+        { id: "s18", label: "إدارة المخزون وضبط الطلبيات لمنع الانقطاعات", desc: "مراقبة المخزون الفعلي، جدولة الطلبيات بدقة دون زيادة أو انقطاع للمواد" },
+        { id: "s19", label: "تنفيذ مهام الصيانة الدورية وعمليات الديب كلين", desc: "الحفاظ على سلامة المعدات وصيانتها المجدولة وتنفيذ عمليات التنظيف العميق الأسبوعية" }
+      ]}
+    ]
+  };
+
+  let APP_CRITERIA = JSON.parse(JSON.stringify(DEFAULT_CRITERIA_MATRIX));
+  let selectedRole = null;
+  let ratings = {};
+  let currentAdminRole = 'barista';
+  let tempAddSectionIndex = null;
+  let performanceChartInstance = null;
+
+  // ── المزامنة الفورية عند تحميل الصفحة وسحب البيانات السحابية ─────────
+  window.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('evaluation-period').value = new Date().toISOString().slice(0, 7);
+    
+    try {
+      showLoadingOverlay('جارٍ مزامنة وتحديث بنود التقييم من السحابة... ☁️');
+      const response = await fetch(CONFIG.SCRIPT_URL + '?action=getCriteria');
+      const result = await response.json();
+      
+      if (result && result.status === 'ok' && result.criteria) {
+        APP_CRITERIA = result.criteria;
+        localStorage.setItem('zam_criteria_cache', JSON.stringify(APP_CRITERIA));
+      } else {
+        loadCriteriaFromLocalCache();
+      }
+    } catch (e) {
+      console.warn("تعذر الاتصال بالسحابة لجلب البنود، استخدام الكاش المحلي كبديل آمن", e);
+      loadCriteriaFromLocalCache();
+    } finally {
+      hideLoadingOverlay();
+    }
+  });
+
+  function loadCriteriaFromLocalCache() {
+    const cached = localStorage.getItem('zam_criteria_cache');
+    if (cached) {
+      APP_CRITERIA = JSON.parse(cached);
+    }
+  }
+
+  function toggleCustomBranch() {
+    const sel = document.getElementById('employee-branch');
+    const input = document.getElementById('custom-branch-input');
+    if (sel.value === 'other') {
+      input.classList.remove('hidden');
+      input.focus();
+    } else {
+      input.classList.add('hidden');
+      input.value = '';
+    }
+  }
+
+  // ── منطق الخطوة الأولى وتحديد الفئات ───────────────────────────────
+  function selectRoleTrack(el) {
+    document.querySelectorAll('.role-toggle').forEach(t => {
+      t.classList.remove('selected', 'border-gold', 'bg-white');
+      t.classList.add('border-borderWarm', 'bg-foam');
+    });
+    el.classList.add('selected', 'border-gold', 'bg-white');
+    selectedRole = el.dataset.role;
+  }
+
+  function proceedToStepTwo() {
+    const id = document.getElementById('employee-id').value.trim();
+    const name = document.getElementById('employee-full-name').value.trim();
+    const phone = document.getElementById('employee-phone').value.trim();
+    const branchSelect = document.getElementById('employee-branch').value;
+    const branchCustom = document.getElementById('custom-branch-input').value.trim();
+    const branch = branchSelect === 'other' ? branchCustom : branchSelect;
+    const period = document.getElementById('evaluation-period').value;
+    const evaluator = document.getElementById('evaluator-full-name').value.trim();
+
+    if (!id) return fireToast('فضلاً أدخل الرقم الوظيفي', true);
+    if (!name) return fireToast('فضلاً أدخل اسم الموظف', true);
+    if (!phone) return fireToast('فضلاً أدخل رقم واتساب الموظف', true);
+    if (!branchSelect) return fireToast('فضلاً حدد فرع العمل المعتمد', true);
+    if (branchSelect === 'other' && !branchCustom) return fireToast('يرجى كتابة اسم الفرع يدوياً', true);
+    if (!period) return fireToast('فضلاً اختر شهر التقييم المستهدف', true);
+    if (!evaluator) return fireToast('فضلاً اكتب اسم المقيّم المسؤول', true);
+    if (!selectedRole) return fireToast('يرجى اختيار الفئة أو المسار الوظيفي للموظف', true);
+
+    document.getElementById('step-one-view').style.display = 'none';
+    document.getElementById('step-two-view').style.display = 'block';
+    
+    // تحديث شريط الحالة المسطح والجديد
+    document.getElementById('node1').classList.remove('bg-foam', 'text-coffee', 'font-semibold');
+    document.getElementById('node1').classList.add('text-successGreen', 'font-medium');
+    document.getElementById('node-num1').classList.remove('bg-coffee', 'text-cream');
+    document.getElementById('node-num1').classList.add('bg-successGreen', 'text-white');
+    document.getElementById('node-num1').innerHTML = '✓';
+
+    document.getElementById('node2').classList.remove('text-textMuted', 'font-medium');
+    document.getElementById('node2').classList.add('bg-foam', 'text-coffee', 'font-semibold');
+    document.getElementById('node-num2').classList.remove('bg-borderWarm', 'text-textMuted');
+    document.getElementById('node-num2').classList.add('bg-coffee', 'text-cream');
+
+    ratings = {};
+    generateCriteriaElements();
+  }
+
+  function revertToStepOne() {
+    document.getElementById('step-one-view').style.display = 'block';
+    document.getElementById('step-two-view').style.display = 'none';
+    
+    // استعادة شكل شريط الحالة المسطح
+    document.getElementById('node1').classList.add('bg-foam', 'text-coffee', 'font-semibold');
+    document.getElementById('node1').classList.remove('text-successGreen', 'font-medium');
+    document.getElementById('node-num1').classList.add('bg-coffee', 'text-cream');
+    document.getElementById('node-num1').classList.remove('bg-successGreen', 'text-white');
+    document.getElementById('node-num1').innerHTML = '1';
+
+    document.getElementById('node2').classList.add('text-textMuted', 'font-medium');
+    document.getElementById('node2').classList.remove('bg-foam', 'text-coffee', 'font-semibold');
+    document.getElementById('node-num2').classList.add('bg-borderWarm', 'text-textMuted');
+    document.getElementById('node-num2').classList.remove('bg-coffee', 'text-cream');
+  }
+
+  // ── بناء واجهة بنود التقييم ديناميكياً مع الأوزان والأزرار التفاعلية المسطحة ──────
+  function generateCriteriaElements() {
+    const rack = document.getElementById('dynamic-criteria-rack');
+    rack.innerHTML = '';
+    const sections = APP_CRITERIA[selectedRole];
+
+    sections.forEach(sec => {
+      if (sec.items.length === 0) return; // تخطي الأقسام الفارغة تماماً
+
+      const sectionCard = document.createElement('div');
+      sectionCard.className = 'bg-white border border-borderWarm rounded-premium p-6 space-y-4';
+
+      let alertHtml = '';
+      if (selectedRole === 'supervisor' && sec.section.includes('فودكس')) {
+        alertHtml = `
+          <div class="bg-dangerRed/10 border border-dangerRed/20 text-dangerRed px-4 py-3 rounded-button text-xs font-semibold flex items-center gap-2">
+            ⚠️ تنبيه محاسبي: كل ملحوظة من قسم المالية تخصم درجتين كاملتين من معدل التقييم النهائي تلقائياً.
+          </div>
+        `;
+      }
+
+      const sectionHeaderHtml = `
+        <div class="flex justify-between items-center border-b border-borderWarm pb-3">
+          <span class="font-bold text-coffee text-sm sm:text-base">${sec.section}</span>
+          <span class="bg-foam border border-borderWarm text-textMuted text-[10px] sm:text-xs px-3 py-1 rounded-full font-bold">الوزن النسبي: ${sec.weight}%</span>
+        </div>
+        ${alertHtml}`;
+
+      const criteriaItemsHtml = sec.items.map(item => `
+        <div class="py-4 border-b border-borderWarm/60 last:border-b-0 space-y-3">
+          <div>
+            <div class="text-sm font-bold text-textDark">${item.label}</div>
+            <div class="text-[11px] sm:text-xs text-textMuted mt-0.5">${item.desc}</div>
+          </div>
+          
+          <!-- حاوية شريط التقييم 1-10 الحديثة والمسطحة بالكامل -->
+          <div class="space-y-2">
+            <div class="grid grid-cols-10 gap-1.5 sm:gap-2" id="track-10-${item.id}">
+              ${Array.from({ length: 10 }, (_, idx) => {
+                const scoreNum = idx + 1;
+                return `<div class="rating-node-10 h-10 border border-borderWarm bg-foam hover:border-gold hover:bg-white text-textMuted text-xs sm:text-sm font-bold rounded-button flex items-center justify-center cursor-pointer transition-all duration-200" 
+                             data-val="${scoreNum}" 
+                             id="node-${item.id}-${scoreNum}"
+                             onmouseover="handleNodeHover('${item.id}', ${scoreNum})"
+                             onmouseout="handleNodeOut('${item.id}')"
+                             onclick="registerIndividualRating('${item.id}', ${scoreNum})">
+                             ${scoreNum}
+                        </div>`;
+              }).join('')}
+            </div>
+            
+            <div class="flex justify-between items-center text-[10px] sm:text-xs font-medium text-textMuted px-1">
+              <span>انقر فوق الدرجة المطلوبة لتثبيت الاختيار</span>
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-borderWarm text-textMuted transition-all duration-300" id="badge-${item.id}">بانتظار التقييم...</span>
+            </div>
+          </div>
+        </div>`).join('');
+
+      sectionCard.innerHTML = sectionHeaderHtml + criteriaItemsHtml;
+      rack.appendChild(sectionCard);
+    });
+
+    recalculateProgressMetrics();
+  }
+
+  // منطق التمرير التفاعلي لعرض التقدير الفوري (Hover Effect)
+  function handleNodeHover(itemId, scoreNum) {
+    const badge = document.getElementById(`badge-${itemId}`);
+    if (badge) {
+      const grade = SCORE_GRADES_10[scoreNum];
+      badge.textContent = `تقدير: ${grade.text} (${scoreNum}/10)`;
+      badge.className = `px-2.5 py-1 rounded-full text-[10px] font-bold transition-all duration-200 badge-${grade.class}`;
+      
+      // تطبيق درجات ألوان مسطحة وعصرية على ملصق التقدير المؤقت
+      applyBadgeStyle(badge, grade.class);
+    }
+  }
+
+  function handleNodeOut(itemId) {
+    const badge = document.getElementById(`badge-${itemId}`);
+    if (badge) {
+      const currentSelectedVal = ratings[itemId];
+      if (currentSelectedVal) {
+        const grade = SCORE_GRADES_10[currentSelectedVal];
+        badge.textContent = `تم الحفظ: ${grade.text} (${currentSelectedVal}/10)`;
+        applyBadgeStyle(badge, grade.class);
+      } else {
+        badge.textContent = 'بانتظار التقييم...';
+        badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-borderWarm text-textMuted';
+        badge.style = '';
+      }
+    }
+  }
+
+  function applyBadgeStyle(badge, category) {
+    badge.style = ''; // تنظيف الأنماط السابقة
+    if (category === 'poor') {
+      badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-dangerRed/10 text-dangerRed';
+    } else if (category === 'acceptable') {
+      badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-gold/10 text-gold';
+    } else if (category === 'good' || category === 'verygood') {
+      badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-successGreen/10 text-successGreen';
+    } else if (category === 'excellent') {
+      badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-coffee/10 text-coffee';
+    }
+  }
+
+  function registerIndividualRating(id, ratingValue) {
+    ratings[id] = ratingValue;
+    
+    // تحديث الأزرار المحددة في هذا البند بلون مسطح داكن وثابت
+    const track = document.getElementById(`track-10-${id}`);
+    if (track) {
+      track.querySelectorAll('.rating-node-10').forEach(node => {
+        node.classList.remove('bg-coffee', 'text-white', 'border-coffee');
+        node.classList.add('border-borderWarm', 'bg-foam', 'text-textMuted');
+        
+        if (parseInt(node.getAttribute('data-val')) === ratingValue) {
+          node.classList.remove('border-borderWarm', 'bg-foam', 'text-textMuted');
+          node.classList.add('bg-coffee', 'text-white', 'border-coffee');
+        }
+      });
+    }
+
+    // تأكيد النص الثابت على الملصق المخصص
+    const badge = document.getElementById(`badge-${id}`);
+    if (badge) {
+      const grade = SCORE_GRADES_10[ratingValue];
+      badge.textContent = `تم الحفظ: ${grade.text} (${ratingValue}/10)`;
+      applyBadgeStyle(badge, grade.class);
+    }
+
+    recalculateProgressMetrics();
+  }
+
+  function countTotalCriteriaItems() {
+    return APP_CRITERIA[selectedRole].reduce((sum, sec) => sum + sec.items.length, 0);
+  }
+
+  // ── دالة الحساب الحقيقي لنتائج التقييم المركبة بدقة تامة من 10 درجات ──────────────────
+  function evaluateWeightedScore() {
+    const sections = APP_CRITERIA[selectedRole];
+    let finalAccumulatedValue = 0;
+    let sumOfSectionWeights = 0;
+
+    sections.forEach(sec => {
+      const ratedSectionItems = sec.items.filter(item => ratings[item.id]);
+      if (ratedSectionItems.length === 0) return;
+
+      const sectionSum = ratedSectionItems.reduce((acc, item) => acc + ratings[item.id], 0);
+      const sectionAvg = sectionSum / ratedSectionItems.length;
+
+      // بما أن التقييم أصبح من 10، نقسم المتوسط على 10 لتحديد النسبة المئوية
+      finalAccumulatedValue += (sectionAvg / 10) * sec.weight;
+      sumOfSectionWeights += sec.weight;
+    });
+
+    if (sumOfSectionWeights === 0) return 0;
+    return Math.round((finalAccumulatedValue / sumOfSectionWeights) * 100);
+  }
+
+  function retrieveGradeLabel(score) {
+    if (score >= 90) return 'ممتاز (A+)';
+    if (score >= 80) return 'جيد جداً (B)';
+    if (score >= 70) return 'جيد (C)';
+    if (score >= 60) return 'مقبول (D)';
+    return 'يحتاج إلى تحسين وتوجيه فوري (F)';
+  }
+
+  function recalculateProgressMetrics() {
+    const total = countTotalCriteriaItems();
+    const completed = Object.keys(ratings).length;
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const finalScore = evaluateWeightedScore();
+
+    // تحديث أشرطة التقدم والمقاييس المادية
+    document.getElementById('fill-progress-bar').style.width = percentage + '%';
+    document.getElementById('criteria-progress-percentage').textContent = percentage + '%';
+    document.getElementById('criteria-progress-text').textContent = `${completed} من أصل ${total} بند تم تقييمه`;
+
+    document.getElementById('monitor-count').textContent = completed + ' / ' + total;
+    
+    if (completed > 0) {
+      document.getElementById('monitor-score').textContent = finalScore + '%';
+      document.getElementById('monitor-grade').textContent = retrieveGradeLabel(finalScore);
+    } else {
+      document.getElementById('monitor-score').textContent = '—';
+      document.getElementById('monitor-grade').textContent = '—';
+    }
+
+    document.getElementById('final-submit-btn').disabled = (completed < total) || (total === 0);
+  }
+
+  // ── دالة إرسال التقييم النهائي للسحابة ومزامنة الشيت ───────────────────
+  async function commitEvaluationSubmission() {
+    const totalScore = evaluateWeightedScore();
+    const sections = APP_CRITERIA[selectedRole];
+    
+    const branchSelect = document.getElementById('employee-branch').value;
+    const branchFinal = branchSelect === 'other' ? document.getElementById('custom-branch-input').value.trim() : branchSelect;
+
+    const submissionPayload = {
+      timestamp: new Date().toISOString(),
+      employeeId: document.getElementById('employee-id').value.trim(),
+      employeeName: document.getElementById('employee-full-name').value.trim(),
+      employeePhone: document.getElementById('employee-phone').value.trim(),
+      branch: branchFinal,
+      month: document.getElementById('evaluation-period').value,
+      evaluator: document.getElementById('evaluator-full-name').value.trim(),
+      role: selectedRole,
+      roleAr: { barista: 'باريستا/كاشير', waiter: 'ويتر/خدمة', kitchen: 'مطبخ', supervisor: 'مشرف شيفت' }[selectedRole],
+      totalScore: totalScore,
+      rating: retrieveGradeLabel(totalScore),
+      strengths: document.getElementById('notable-strengths').value.trim(),
+      development: document.getElementById('development-areas').value.trim(),
+      ratings: { ...ratings },
+      sectionScores: sections.map(sec => {
+        const ratedItems = sec.items.filter(item => ratings[item.id]);
+        const scorePct = ratedItems.length > 0
+          ? Math.round((ratedItems.reduce((acc, item) => acc + ratings[item.id], 0) / (ratedItems.length * 10)) * 100)
+          : 0;
+        return { section: sec.section, weight: sec.weight, score: scorePct };
+      })
+    };
+
+    try {
+      showLoadingOverlay('جارٍ إرسال التقييم وحفظ البيانات سحابياً... 🚀');
+      await fetch(CONFIG.SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submissionPayload)
+      });
+      
+      hideLoadingOverlay();
+      displaySuccessScreen(submissionPayload);
+    } catch (e) {
+      hideLoadingOverlay();
+      fireToast('حدث خطأ فني أثناء الإرسال. تحقق من الإنترنت وحاول مرة أخرى', true);
+    }
+  }
+
+  function displaySuccessScreen(data) {
+    document.getElementById('step-two-view').style.display = 'none';
+    document.getElementById('steps-row').style.display = 'none';
+
+    document.getElementById('summary-meta-rack').innerHTML = `
+      <div class="text-sm border-b border-borderWarm/80 pb-2 mb-2">الرقم الوظيفي: <span class="font-bold text-coffee">${data.employeeId}</span></div>
+      <div class="text-sm border-b border-borderWarm/80 pb-2 mb-2">الموظف المقيم: <span class="font-bold text-coffee">${data.employeeName}</span></div>
+      <div class="text-sm border-b border-borderWarm/80 pb-2 mb-2">الفرع المسجل: <span class="font-bold text-coffee">${data.branch}</span></div>
+      <div class="text-sm border-b border-borderWarm/80 pb-2 mb-2">الفئة المعتمدة: <span class="font-bold text-coffee">${data.roleAr}</span></div>
+      <div class="text-sm">النتيجة النهائية: <span class="font-bold text-successGreen text-base">${data.totalScore}% — ${data.rating}</span></div>
+    `;
+
+    // ── زر PDF ──
+    document.getElementById('pdf-download-btn').onclick = () => generateAndPrintPDF(data);
+
+    // ── زر واتساب: يحمّل PDF أولاً ثم يفتح واتساب ──
+    document.getElementById('whatsapp-share-btn').onclick = () => sendPDFViaWhatsApp(data);
+
+    document.getElementById('evaluation-success-card').classList.remove('hidden');
+    document.getElementById('evaluation-success-card').classList.add('show');
+  }
+
+  // ════════════════════════════════════════════════════
+  // بناء محتوى HTML للطباعة (كامل البنود + التقييمات)
+  // ════════════════════════════════════════════════════
+  function buildPDFHTML(data) {
+    const sections = APP_CRITERIA[data.role] || [];
+
+    // ── بناء جدول بنود التقييم بالتفصيل الكامل ──
+    const sectionsHTML = sections.map(sec => {
+      const ratedItems = sec.items.filter(item => data.ratings[item.id]);
+      const secAvg = ratedItems.length > 0
+        ? Math.round((ratedItems.reduce((a, i) => a + data.ratings[i.id], 0) / ratedItems.length) * 10)
+        : 0;
+
+      const itemsRows = sec.items.map(item => {
+        const score = data.ratings[item.id] || 0;
+        const pct   = score * 10;
+        const barColor = pct >= 80 ? '#2D7A4F' : pct >= 60 ? '#C8922A' : pct >= 40 ? '#E67E22' : '#C0392B';
+        const grade = score >= 9 ? 'ممتاز' : score >= 7 ? 'جيد جداً' : score >= 5 ? 'مقبول' : score > 0 ? 'يحتاج تحسين' : '—';
+        return `
+          <tr>
+            <td style="padding:7px 10px;font-size:11px;color:#1A0F08;border-bottom:1px solid #F0EBE3;line-height:1.5;">${item.label}<br><span style="color:#7A5C48;font-size:10px;">${item.desc || ''}</span></td>
+            <td style="padding:7px 10px;text-align:center;font-size:12px;font-weight:700;color:${barColor};border-bottom:1px solid #F0EBE3;">${score > 0 ? score + '/10' : '—'}</td>
+            <td style="padding:7px 10px;border-bottom:1px solid #F0EBE3;">
+              <div style="background:#EFE9E0;border-radius:4px;height:8px;overflow:hidden;">
+                <div style="background:${barColor};width:${pct}%;height:100%;border-radius:4px;"></div>
+              </div>
+            </td>
+            <td style="padding:7px 10px;text-align:center;font-size:10px;font-weight:600;color:${barColor};border-bottom:1px solid #F0EBE3;">${grade}</td>
+          </tr>`;
+      }).join('');
+
+      return `
+        <div style="margin-bottom:18px;break-inside:avoid;">
+          <div style="background:#2C1810;color:#F5EDD8;padding:8px 14px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;font-weight:700;">${sec.section}</span>
+            <span style="font-size:11px;background:rgba(200,146,42,.3);padding:2px 10px;border-radius:20px;">الوزن: ${sec.weight}% | متوسط القسم: ${secAvg}%</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #EFE9E0;border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">
+            <thead>
+              <tr style="background:#FAF6EE;">
+                <th style="padding:7px 10px;font-size:10px;color:#7A5C48;text-align:right;font-weight:600;border-bottom:1px solid #EFE9E0;">بند التقييم</th>
+                <th style="padding:7px 10px;font-size:10px;color:#7A5C48;text-align:center;font-weight:600;border-bottom:1px solid #EFE9E0;width:70px;">الدرجة</th>
+                <th style="padding:7px 10px;font-size:10px;color:#7A5C48;font-weight:600;border-bottom:1px solid #EFE9E0;width:120px;">المستوى</th>
+                <th style="padding:7px 10px;font-size:10px;color:#7A5C48;text-align:center;font-weight:600;border-bottom:1px solid #EFE9E0;width:80px;">التقدير</th>
+              </tr>
+            </thead>
+            <tbody>${itemsRows}</tbody>
+          </table>
+        </div>`;
+    }).join('');
+
+    // ── النتيجة الكلية ──
+    const scoreColor = data.totalScore >= 80 ? '#2D7A4F' : data.totalScore >= 70 ? '#C8922A' : '#C0392B';
+    const scoreBg    = data.totalScore >= 80 ? '#E8F5EE' : data.totalScore >= 70 ? '#FFF8E6' : '#FDECEA';
+
+    // ── الملاحظات ──
+    const notesHTML = (data.strengths || data.development) ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;break-inside:avoid;">
+        ${data.strengths ? `
+        <div style="background:#FAF6EE;border:1px solid #EFE9E0;border-right:4px solid #C8922A;border-radius:8px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#2C1810;margin-bottom:6px;">⭐ نقاط القوة</div>
+          <div style="font-size:11px;color:#4A2C1A;line-height:1.7;">${data.strengths}</div>
+        </div>` : ''}
+        ${data.development ? `
+        <div style="background:#FAF6EE;border:1px solid #EFE9E0;border-right:4px solid #2D7A4F;border-radius:8px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#2C1810;margin-bottom:6px;">🎯 مجالات التطوير</div>
+          <div style="font-size:11px;color:#4A2C1A;line-height:1.7;">${data.development}</div>
+        </div>` : ''}
+      </div>` : '';
+
+    return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تقييم ${data.employeeName} — ${data.month}</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans Arabic', Arial, sans-serif; background: #fff; color: #1A0F08; direction: rtl; }
+  @page { size: A4; margin: 14mm 14mm 14mm 14mm; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-break { break-inside: avoid; }
+  }
+</style>
+</head>
+<body style="padding:0;margin:0;">
+
+  <!-- HEADER -->
+  <div style="background:linear-gradient(135deg,#2C1810,#4A2C1A);padding:22px 24px 16px;border-bottom:4px solid #C8922A;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <img src="https://res.cloudinary.com/dr26mwbbx/image/upload/v1778529393/IMG_0212_p3klkw.png"
+             style="width:52px;height:52px;border-radius:50%;border:2px solid #C8922A;object-fit:cover;"
+             onerror="this.style.display='none'">
+        <div>
+          <div style="font-size:18px;font-weight:700;color:#F5EDD8;letter-spacing:.5px;">زام للقهوة المختصة</div>
+          <div style="font-size:11px;color:#F0D080;margin-top:2px;">تقرير تقييم الأداء الشهري الرسمي</div>
+        </div>
+      </div>
+      <div style="text-align:left;">
+        <div style="font-size:10px;color:#F0D080;">فترة التقييم</div>
+        <div style="font-size:14px;font-weight:700;color:#F5EDD8;">${data.month || '—'}</div>
+        <div style="font-size:9px;color:#C8922A;margin-top:3px;">صدر: ${new Date().toLocaleDateString('ar-SA')}</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:18px 20px;">
+
+    <!-- بطاقة بيانات الموظف -->
+    <div style="background:#FAF6EE;border:1px solid #EFE9E0;border-radius:10px;padding:14px 18px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" class="no-break">
+      ${[
+        ['👤 اسم الموظف', data.employeeName],
+        ['🪪 الرقم الوظيفي', data.employeeId],
+        ['🏪 الفرع', data.branch],
+        ['💼 الفئة الوظيفية', data.roleAr],
+        ['📋 المقيّم', data.evaluator],
+        ['📱 الواتساب', data.employeePhone]
+      ].map(([label, val]) => `
+        <div>
+          <div style="font-size:9px;color:#7A5C48;font-weight:600;margin-bottom:3px;">${label}</div>
+          <div style="font-size:12px;font-weight:700;color:#2C1810;">${val || '—'}</div>
+        </div>`).join('')}
+    </div>
+
+    <!-- النتيجة الكلية -->
+    <div style="background:${scoreBg};border:2px solid ${scoreColor};border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;" class="no-break">
+      <div>
+        <div style="font-size:11px;color:#7A5C48;font-weight:600;margin-bottom:4px;">النتيجة الكلية المرجّحة</div>
+        <div style="font-size:34px;font-weight:700;color:${scoreColor};line-height:1;">${data.totalScore}%</div>
+        <div style="font-size:13px;font-weight:600;color:${scoreColor};margin-top:4px;">${data.rating}</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="background:#EFE9E0;border-radius:8px;height:12px;width:180px;overflow:hidden;">
+          <div style="background:${scoreColor};width:${data.totalScore}%;height:100%;border-radius:8px;"></div>
+        </div>
+        <div style="font-size:10px;color:#7A5C48;margin-top:6px;">التقييم من 100 درجة مرجّحة بأوزان الأقسام</div>
+      </div>
+      <div style="text-align:center;background:${scoreColor};color:#fff;border-radius:50%;width:60px;height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div style="font-size:20px;font-weight:800;">${data.totalScore >= 80 ? 'A' : data.totalScore >= 70 ? 'B' : data.totalScore >= 60 ? 'C' : 'D'}</div>
+        <div style="font-size:9px;">Grade</div>
+      </div>
+    </div>
+
+    <!-- ملخص الأقسام -->
+    ${data.sectionScores && data.sectionScores.length ? `
+    <div style="margin-bottom:20px;break-inside:avoid;">
+      <div style="font-size:12px;font-weight:700;color:#2C1810;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #EFE9E0;">📊 ملخص أداء الأقسام</div>
+      <div style="display:grid;grid-template-columns:repeat(${Math.min(data.sectionScores.length,3)},1fr);gap:10px;">
+        ${data.sectionScores.map(s => {
+          const c = s.score >= 80 ? '#2D7A4F' : s.score >= 60 ? '#C8922A' : '#C0392B';
+          return `<div style="background:#FAF6EE;border:1px solid #EFE9E0;border-top:3px solid ${c};border-radius:8px;padding:10px 12px;">
+            <div style="font-size:10px;color:#7A5C48;margin-bottom:6px;line-height:1.4;">${s.section}</div>
+            <div style="font-size:18px;font-weight:700;color:${c};">${s.score}%</div>
+            <div style="font-size:9px;color:#7A5C48;">وزن: ${s.weight}%</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
+
+    <!-- بنود التقييم التفصيلية الكاملة -->
+    <div style="font-size:12px;font-weight:700;color:#2C1810;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #EFE9E0;">📋 تفصيل بنود التقييم الكاملة</div>
+    ${sectionsHTML}
+
+    <!-- الملاحظات -->
+    ${notesHTML}
+
+    <!-- التوقيعات -->
+    <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;break-inside:avoid;">
+      ${['المقيّم المسؤول','مدير الفرع','الموظف (اطلعت وأفهمت)'].map((label,i) => `
+        <div style="text-align:center;">
+          <div style="border-top:1.5px solid #2C1810;padding-top:8px;margin-top:30px;">
+            <div style="font-size:10px;color:#7A5C48;">${label}</div>
+            ${i===0?`<div style="font-size:11px;font-weight:600;color:#2C1810;margin-top:3px;">${data.evaluator}</div>`:''}
+            ${i===2?`<div style="font-size:11px;font-weight:600;color:#2C1810;margin-top:3px;">${data.employeeName}</div>`:''}
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <!-- فوتر -->
+    <div style="margin-top:20px;padding-top:10px;border-top:1px solid #EFE9E0;text-align:center;">
+      <div style="font-size:9px;color:#7A5C48;">هذا المستند سري ويخص شؤون الموظفين — زام للقهوة المختصة © ${new Date().getFullYear()}</div>
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+
+  // ════════════════════════════════════════════════════
+  // طباعة / حفظ PDF عبر Print Dialog
+  // ════════════════════════════════════════════════════
+  function generateAndPrintPDF(data) {
+    const html = buildPDFHTML(data);
+    const printWin = window.open('', '_blank', 'width=900,height=700');
+    printWin.document.write(html);
+    printWin.document.close();
+    printWin.onload = () => {
+      setTimeout(() => {
+        printWin.focus();
+        printWin.print();
+      }, 600);
+    };
+    fireToast('✅ يمكنك حفظه كـ PDF من نافذة الطباعة');
+  }
+
+  // ════════════════════════════════════════════════════
+  // إرسال PDF عبر واتساب
+  // الطريقة: نفتح PDF في نافذة مؤقتة + نفتح واتساب
+  // مع رسالة تطلب من المقيّم إرسال الملف المحفوظ
+  // ════════════════════════════════════════════════════
+  function sendPDFViaWhatsApp(data) {
+    // ── فتح واتساب فوراً (ضمن نقرة المستخدم لتجاوز حاجب النوافذ) ──
+    let rawPhone = (data.employeePhone || '').replace(/\D/g, '');
+    if (rawPhone.startsWith('05'))        rawPhone = '966' + rawPhone.substring(1);
+    else if (!rawPhone.startsWith('966')) rawPhone = '966' + rawPhone;
+
+    const msg =
+`أهلاً ${data.employeeName} 👋
+
+نود إفادتك بأنه تم إصدار تقرير تقييم أدائك الشهري لـ *${data.month}*.
+
+📊 *النتيجة الكلية:* ${data.totalScore}%
+🏅 *التقدير:* ${data.rating}
+
+${data.strengths ? `⭐ *نقاط القوة:*\n${data.strengths}\n\n` : ''}${data.development ? `🎯 *مجالات التطوير:*\n${data.development}\n\n` : ''}📎 ستجد ملف PDF التفصيلي محفوظاً على جهازك، أرجو إرفاقه في هذه المحادثة.
+نشكر جهودك ونتمنى لك التوفيق والتميز المستمر.
+
+— إدارة زام للقهوة المختصة ☕`;
+
+    const waURL = `https://wa.me/${rawPhone}?text=${encodeURIComponent(msg)}`;
+    // فتح واتساب أولاً (متزامن مع نقرة المستخدم)
+    const waWin = window.open(waURL, '_blank');
+
+    // ── فتح PDF بعدها مباشرة ──
+    const html = buildPDFHTML(data);
+    const printWin = window.open('', '_blank', 'width=900,height=700');
+    if (printWin) {
+      printWin.document.write(html);
+      printWin.document.close();
+      printWin.onload = () => setTimeout(() => { printWin.focus(); printWin.print(); }, 500);
+    } else {
+      fireToast('⚠️ المتصفح حجب نافذة PDF — اضغط "تحميل نسخة PDF" يدوياً', true);
+    }
+
+    if (!waWin) {
+      fireToast('⚠️ المتصفح حجب واتساب — اسمح بالنوافذ المنبثقة', true);
+    } else {
+      fireToast('📲 فُتح واتساب + PDF للحفظ والإرفاق يدوياً');
+    }
+  }
+
+  function initiateFreshForm() {
+    document.getElementById('evaluation-success-card').classList.add('hidden');
+    document.getElementById('evaluation-success-card').classList.remove('show');
+    document.getElementById('steps-row').style.display = 'flex';
+    document.getElementById('step-one-view').style.display = 'block';
+
+    document.getElementById('node1').className = 'flex-1 flex items-center gap-3 p-4 justify-center sm:justify-start border-b sm:border-b-0 sm:border-l border-borderWarm transition-all duration-300 bg-foam text-coffee font-semibold';
+    document.getElementById('node2').className = 'flex-1 flex items-center gap-3 p-4 justify-center sm:justify-start border-b sm:border-b-0 sm:border-l border-borderWarm transition-all duration-300 text-textMuted font-medium';
+    
+    document.getElementById('node-num1').className = 'w-7 h-7 rounded-full bg-coffee text-cream flex items-center justify-center text-xs font-bold';
+    document.getElementById('node-num1').innerHTML = '1';
+
+    document.querySelectorAll('.role-toggle').forEach(t => {
+      t.classList.remove('selected', 'border-gold', 'bg-white');
+      t.classList.add('border-borderWarm', 'bg-foam');
+    });
+    selectedRole = null;
+    ratings = {};
+
+    document.getElementById('employee-id').value = '';
+    document.getElementById('employee-full-name').value = '';
+    document.getElementById('employee-phone').value = '';
+    document.getElementById('employee-branch').value = '';
+    document.getElementById('custom-branch-input').value = '';
+    document.getElementById('custom-branch-input').classList.add('hidden');
+    document.getElementById('notable-strengths').value = '';
+    document.getElementById('development-areas').value = '';
+  }
+
+  // ── تأمين وحماية بوابات الإدارة بكلمة سر مادية مؤمنة ────────────────
+  function triggerAdminLock() {
+    document.getElementById('admin-password-input').value = '';
+    document.getElementById('admin-security-overlay').classList.remove('hidden');
+    document.getElementById('admin-password-input').focus();
+  }
+
+   function dismissAdminLock() {
+    document.getElementById('admin-security-overlay').classList.add('hidden');
+    // إعادة تعيين شاشة الأمان
+    document.getElementById('admin-menu-buttons').classList.add('hidden');
+    document.getElementById('admin-verify-row').classList.remove('hidden');
+    document.getElementById('admin-password-input').disabled = false;
+    document.getElementById('admin-password-input').value = '';
+  }
+
+  function verifyAdminGate() {
+    const input = document.getElementById('admin-password-input').value;
+    if (input === '2026') {
+      // إظهار الأزرار وإخفاء زر التأكيد
+      document.getElementById('admin-menu-buttons').classList.remove('hidden');
+      document.getElementById('admin-verify-row').classList.add('hidden');
+      document.getElementById('admin-password-input').disabled = true;
+    } else {
+      fireToast('رمز التحقق غير صحيح، حاول مرة أخرى', true);
+    }
+  }  function openAdminSection(section) {
+    dismissAdminLock(); // إغلاق شاشة الأمان
+    
+    if (section === 'criteria') {
+      presentAdminPanel(); // اللوحة الحالية (بنود التقييم)
+    } else if (section === 'dashboard') {
+      presentAdminPanel(); // افتح اللوحة وروح للداشبورد
+      setTimeout(() => {
+        const dashBtn = document.querySelector('.admin-tab-btn[onclick*="loadPerformanceAnalytics"]');
+        if (dashBtn) dashBtn.click();
+      }, 100);
+    } else if (section === 'supervisors') {
+      presentAdminPanel(); // افتح اللوحة وروح لإدارة المشرفين
+      setTimeout(() => {
+        const supBtn = document.querySelector('.admin-tab-btn[onclick*="openSupervisorManagementTab"]');
+        if (supBtn) supBtn.click();
+      }, 100);
+    }
+  }  function openSupervisorManagementTab(btnEl) {
+    const tabs = document.querySelectorAll('.admin-tab-btn');
+    tabs.forEach(t => {
+      t.className = 'admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white';
+    });
+    btnEl.className = 'admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-coffee transition-all bg-white shadow-sm';
+    openSupervisorManagement();
+  }
+
+  // ── فتح وبناء لوحة الإدارة المعدلة كلياً ──────────────────────────────
+  function presentAdminPanel() {
+    document.getElementById('admin-panel-overlay').classList.remove('hidden');
+    
+    // تفعيل التبويب الأول بشكل افتراضي
+    const tabs = document.querySelectorAll('.admin-tab-btn');
+    tabs.forEach(t => t.className = 'admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white');
+    tabs[0].className = 'admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-coffee transition-all bg-white shadow-sm';
+    
+    currentAdminRole = 'barista';
+    buildAdminWorkspaceItems();
+  }
+
+  function dismissAdminPanel() {
+    document.getElementById('admin-panel-overlay').classList.add('hidden');
+    if (selectedRole && document.getElementById('step-two-view').style.display === 'block') {
+      ratings = {};
+      generateCriteriaElements();
+    }
+  }
+
+  function switchAdminWorkspace(role, btnEl) {
+    currentAdminRole = role;
+    
+    const tabs = document.querySelectorAll('.admin-tab-btn');
+    tabs.forEach(t => {
+      t.className = 'admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white';
+    });
+    
+    btnEl.className = 'admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-coffee transition-all bg-white shadow-sm';
+    
+    buildAdminWorkspaceItems();
+  }
+
+  function buildAdminWorkspaceItems() {
+    const rack = document.getElementById('admin-workspace-rack');
+    rack.innerHTML = '';
+    const sections = APP_CRITERIA[currentAdminRole];
+
+    // ── حساب الأوزان التلقائية (موزّعة بالتساوي حسب عدد الأسئلة) ──
+    const totalItems = sections.reduce((s, sec) => s + sec.items.length, 0);
+    if (totalItems > 0) {
+      let allocated = 0;
+      sections.forEach((sec, i) => {
+        if (i < sections.length - 1) {
+          sec.weight = Math.round((sec.items.length / totalItems) * 100);
+          allocated += sec.weight;
+        } else {
+          sec.weight = 100 - allocated; // القسم الأخير يأخذ الباقي لضمان مجموع 100
+        }
+      });
+    }
+
+    // ── حساب مجموع الأوزان ──
+    const totalWeight = sections.reduce((s, sec) => s + (sec.weight || 0), 0);
+    const weightOk = totalWeight === 100;
+
+    // ── شريط ملخص الأوزان ──
+    rack.innerHTML += `
+      <div class="bg-${weightOk ? 'successGreen' : 'dangerRed'}/10 border border-${weightOk ? 'successGreen' : 'dangerRed'}/20 text-${weightOk ? 'successGreen' : 'dangerRed'} px-4 py-2.5 rounded-button text-xs font-bold flex items-center justify-between">
+        <span>${weightOk ? '✅' : '⚠️'} مجموع الأوزان الكلية: ${totalWeight}% من أصل 100%</span>
+        <span class="text-[10px] opacity-70">تُحسب تلقائياً بناءً على عدد الأسئلة في كل قسم</span>
+      </div>`;
+
+    sections.forEach((sec, secIdx) => {
+      let itemsHtml = sec.items.map((item, itemIdx) => `
+        <div class="bg-foam border border-borderWarm rounded-button p-3 space-y-2">
+          <div class="flex gap-2 items-start">
+            <div class="flex-1 space-y-1.5">
+              <input
+                type="text"
+                value="${(item.label || '').replace(/"/g, '&quot;')}"
+                placeholder="عنوان البند..."
+                class="w-full px-3 py-2 bg-white border border-borderWarm rounded-button text-xs font-bold text-coffee focus:border-gold outline-none transition-all"
+                onchange="updateCriteriaItem(${secIdx}, ${itemIdx}, 'label', this.value)"
+              >
+              <input
+                type="text"
+                value="${(item.desc || '').replace(/"/g, '&quot;')}"
+                placeholder="الوصف التوجيهي (اختياري)..."
+                class="w-full px-3 py-2 bg-white border border-borderWarm rounded-button text-[11px] text-textMuted focus:border-gold outline-none transition-all"
+                onchange="updateCriteriaItem(${secIdx}, ${itemIdx}, 'desc', this.value)"
+              >
+            </div>
+            <button class="text-dangerRed hover:bg-dangerRed/10 p-2 rounded-button transition-all flex-shrink-0 mt-0.5" onclick="triggerCriteriaItemRemoval(${secIdx}, ${itemIdx})" title="حذف البند">🗑️</button>
+          </div>
+        </div>`).join('');
+
+      if (sec.items.length === 0) {
+        itemsHtml = `<p class="text-center text-xs text-textMuted py-3 bg-foam rounded-button border border-dashed border-borderWarm">لا توجد بنود في هذا القسم.</p>`;
+      }
+
+      rack.innerHTML += `
+        <div class="bg-white border border-borderWarm rounded-premium p-5 space-y-3 shadow-[0_4px_12px_rgba(0,0,0,0.01)]">
+          <div class="flex justify-between items-center border-b border-borderWarm pb-2.5 gap-3">
+            <input
+              type="text"
+              value="${(sec.section || '').replace(/"/g, '&quot;')}"
+              placeholder="اسم القسم..."
+              class="flex-1 px-3 py-1.5 bg-foam border border-borderWarm rounded-button text-xs sm:text-sm font-bold text-coffee focus:border-gold outline-none transition-all"
+              onchange="updateSectionName(${secIdx}, this.value)"
+            >
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <span class="text-[10px] text-textMuted">الوزن:</span>
+              <span class="bg-gold/10 text-gold text-xs font-bold px-2.5 py-1 rounded-full border border-gold/20">${sec.weight}%</span>
+              <span class="text-[10px] text-textMuted">(${sec.items.length} سؤال)</span>
+            </div>
+          </div>
+          <div class="space-y-2">${itemsHtml}</div>
+          <button class="w-full border border-dashed border-successGreen/30 hover:border-successGreen bg-successGreen/5 hover:bg-successGreen/10 text-successGreen text-xs font-bold py-2.5 rounded-button transition-all flex items-center justify-center gap-1.5" onclick="presentNewItemForm(${secIdx})">
+            <span>➕</span> إضافة بند جديد لهذا القسم
+          </button>
+        </div>`;
+    });
+
+    // ── زر إضافة قسم جديد ──
+    rack.innerHTML += `
+      <button onclick="addNewSection()" class="w-full border-2 border-dashed border-gold/30 hover:border-gold bg-gold/5 hover:bg-gold/10 text-gold text-xs font-bold py-3 rounded-premium transition-all flex items-center justify-center gap-2">
+        ➕ إضافة قسم جديد كامل
+      </button>`;
+  }
+
+  function updateCriteriaItem(secIdx, itemIdx, field, val) {
+    APP_CRITERIA[currentAdminRole][secIdx].items[itemIdx][field] = val;
+    // لا نعيد بناء الواجهة لتجنب فقدان التركيز، فقط نحدث الأوزان
+    updateWeightBadges();
+    commitCriteriaSync();
+  }
+
+  function updateSectionName(secIdx, val) {
+    APP_CRITERIA[currentAdminRole][secIdx].section = val;
+    commitCriteriaSync();
+  }
+
+  function addNewSection() {
+    APP_CRITERIA[currentAdminRole].push({
+      section: 'قسم جديد',
+      weight: 0,
+      items: [{ id: `${currentAdminRole.charAt(0)}_${Math.random().toString(36).substr(2,5)}`, label: 'بند جديد', desc: '' }]
+    });
+    commitCriteriaSync();
+    buildAdminWorkspaceItems();
+  }
+
+  function updateWeightBadges() {
+    const sections = APP_CRITERIA[currentAdminRole];
+    const totalItems = sections.reduce((s, sec) => s + sec.items.length, 0);
+    if (totalItems === 0) return;
+    let allocated = 0;
+    sections.forEach((sec, i) => {
+      if (i < sections.length - 1) {
+        sec.weight = Math.round((sec.items.length / totalItems) * 100);
+        allocated += sec.weight;
+      } else {
+        sec.weight = 100 - allocated;
+      }
+    });
+  }
+
+  // ── إضافة وحذف البنود ومزامنتها سحابياً على جميع الأجهزة ──────────────────
+  function triggerCriteriaItemRemoval(secIdx, itemIdx) {
+    APP_CRITERIA[currentAdminRole][secIdx].items.splice(itemIdx, 1);
+    commitCriteriaSync();
+    buildAdminWorkspaceItems();
+  }
+
+  function presentNewItemForm(secIdx) {
+    tempAddSectionIndex = secIdx;
+    document.getElementById('add-item-title-field').value = '';
+    document.getElementById('add-item-desc-field').value = '';
+    document.getElementById('new-item-overlay').classList.remove('hidden');
+    document.getElementById('add-item-title-field').focus();
+  }
+
+  function dismissNewItemForm() {
+    document.getElementById('new-item-overlay').classList.add('hidden');
+  }
+
+  function confirmNewItemAddition() {
+    const label = document.getElementById('add-item-title-field').value.trim();
+    const desc = document.getElementById('add-item-desc-field').value.trim();
+
+    if (!label) return fireToast('يرجى إدخال عنوان البند الجديد', true);
+
+    const prefix = currentAdminRole.charAt(0);
+    const uniqueId = `${prefix}_${Math.random().toString(36).substr(2, 6)}`;
+
+    APP_CRITERIA[currentAdminRole][tempAddSectionIndex].items.push({
+      id: uniqueId,
+      label: label,
+      desc: desc
+    });
+
+    commitCriteriaSync();
+    dismissNewItemForm();
+    buildAdminWorkspaceItems();
+  }
+
+  async function commitCriteriaSync() {
+    localStorage.setItem('zam_criteria_cache', JSON.stringify(APP_CRITERIA));
+    fireToast('جاري تحديث ومزامنة البنود سحابياً... ☁️');
+
+    try {
+      await fetch(CONFIG.SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'saveCriteria', criteria: APP_CRITERIA })
+      });
+      fireToast('✅ تمت المزامنة مع كافة الأجهزة بنجاح');
+    } catch (e) {
+      fireToast('⚠️ فشل التحديث السحابي، تم الحفظ محلياً فقط', true);
+    }
+  }
+
+  // ── سحب وبناء المخططات البيانية التفاعلية (داشبورد الأداء) عبر Chart.js ──
+  async function loadPerformanceAnalytics(btnEl) {
+    const tabs = document.querySelectorAll('.admin-tab-btn');
+    tabs.forEach(t => {
+      t.className = 'admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white';
+    });
+    btnEl.className = 'admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-coffee transition-all bg-white shadow-sm border border-gold/30';
+
+    const rack = document.getElementById('admin-workspace-rack');
+    rack.innerHTML = `
+      <div class="text-center py-12 space-y-4">
+        <div class="spinner-element mx-auto"></div>
+        <p class="text-xs text-textMuted font-bold">جارٍ استخراج وتدقيق التقييمات التراكمية من السحابة...</p>
+      </div>`;
+
+    try {
+      const response = await fetch(CONFIG.SCRIPT_URL + '?action=getDashboardData');
+      const payload = await response.json();
+
+      if (payload && payload.status === 'ok' && payload.data && payload.data.length > 1) {
+        renderFullDashboard(rack, payload.data);
+      } else {
+        rack.innerHTML = `<p class="text-center text-xs text-textMuted py-12">لا توجد أي تقييمات مسجلة في السحابة حتى الآن لبناء الداشبورد.</p>`;
+      }
+    } catch (e) {
+      rack.innerHTML = `<p class="text-center text-xs text-dangerRed font-bold py-12">تعذر سحب البيانات السحابية. يرجى مراجعة اتصال الإنترنت لديك.</p>`;
+    }
+  }
+
+  // ════════════════════════════════════════════════════
+  // داشبورد شامل: موظفين + فروع + فئات + الأفضل أداءً
+  // أعمدة الشيت: 0:تاريخ 1:شهر 2:رقم_وظيفي 3:اسم 4:جوال
+  //              5:فئة 6:فرع 7:مقيّم 8:نتيجة 9:تقدير ...
+  // ════════════════════════════════════════════════════
+  function renderFullDashboard(container, rawData) {
+    const rows = rawData.slice(1).filter(r => r[2]); // تجاهل الصفوف الفارغة
+
+    if (rows.length === 0) {
+      container.innerHTML = `<p class="text-center text-xs text-textMuted py-12">لا توجد بيانات كافية بعد.</p>`;
+      return;
+    }
+
+    // ── تجميع حسب الموظف ──
+    const empMap = {};
+    rows.forEach(r => {
+      const id = r[2], name = r[3], role = r[5], branch = r[6], score = parseFloat(r[8]) || 0;
+      if (!empMap[id]) empMap[id] = { name, role, branch, scores: [] };
+      empMap[id].scores.push(score);
+    });
+    const employees = Object.entries(empMap).map(([id, e]) => ({
+      id, name: e.name, role: e.role, branch: e.branch,
+      avg: Math.round(e.scores.reduce((a, b) => a + b, 0) / e.scores.length),
+      count: e.scores.length
+    }));
+
+    // ── تجميع حسب الفرع ──
+    const branchMap = {};
+    rows.forEach(r => {
+      const branch = r[6] || 'غير محدد', score = parseFloat(r[8]) || 0;
+      if (!branchMap[branch]) branchMap[branch] = [];
+      branchMap[branch].push(score);
+    });
+    const branches = Object.entries(branchMap).map(([name, scores]) => ({
+      name, avg: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length), count: scores.length
+    })).sort((a, b) => b.avg - a.avg);
+
+    // ── تجميع حسب الفئة الوظيفية ──
+    const roleMap = {};
+    rows.forEach(r => {
+      const role = r[5] || 'غير محدد', score = parseFloat(r[8]) || 0;
+      if (!roleMap[role]) roleMap[role] = [];
+      roleMap[role].push(score);
+    });
+    const roles = Object.entries(roleMap).map(([name, scores]) => ({
+      name, avg: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length), count: scores.length
+    })).sort((a, b) => b.avg - a.avg);
+
+    // ── الأفضل والأضعف ──
+    const sortedEmps = [...employees].sort((a, b) => b.avg - a.avg);
+    const topEmployee = sortedEmps[0];
+    const bottomEmployee = sortedEmps[sortedEmps.length - 1];
+    const topBranch = branches[0];
+    const topRole = roles[0];
+
+    const gradeColor = v => v >= 80 ? '#2D7A4F' : v >= 60 ? '#C8922A' : '#C0392B';
+
+    container.innerHTML = `
+      <div class="space-y-5">
+
+        <!-- بطاقات الأفضل أداءً -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="bg-gradient-to-br from-gold/15 to-gold/5 border border-gold/30 rounded-premium p-4">
+            <div class="text-[10px] text-textMuted font-bold mb-1">🏆 أفضل موظف</div>
+            <div class="text-sm font-bold text-coffee">${topEmployee ? topEmployee.name : '—'}</div>
+            <div class="text-lg font-bold" style="color:${gradeColor(topEmployee ? topEmployee.avg : 0)}">${topEmployee ? topEmployee.avg : 0}%</div>
+            <div class="text-[10px] text-textMuted">${topEmployee ? topEmployee.role : ''} — ${topEmployee ? topEmployee.branch : ''}</div>
+          </div>
+          <div class="bg-gradient-to-br from-successGreen/15 to-successGreen/5 border border-successGreen/30 rounded-premium p-4">
+            <div class="text-[10px] text-textMuted font-bold mb-1">🏪 أفضل فرع</div>
+            <div class="text-sm font-bold text-coffee">${topBranch ? topBranch.name : '—'}</div>
+            <div class="text-lg font-bold" style="color:${gradeColor(topBranch ? topBranch.avg : 0)}">${topBranch ? topBranch.avg : 0}%</div>
+            <div class="text-[10px] text-textMuted">${topBranch ? topBranch.count : 0} تقييم مسجل</div>
+          </div>
+          <div class="bg-gradient-to-br from-roast/15 to-roast/5 border border-roast/30 rounded-premium p-4">
+            <div class="text-[10px] text-textMuted font-bold mb-1">💼 أفضل فئة وظيفية</div>
+            <div class="text-sm font-bold text-coffee">${topRole ? topRole.name : '—'}</div>
+            <div class="text-lg font-bold" style="color:${gradeColor(topRole ? topRole.avg : 0)}">${topRole ? topRole.avg : 0}%</div>
+            <div class="text-[10px] text-textMuted">${topRole ? topRole.count : 0} تقييم مسجل</div>
+          </div>
+        </div>
+
+        ${bottomEmployee && bottomEmployee.id !== (topEmployee && topEmployee.id) ? `
+        <div class="bg-dangerRed/5 border border-dangerRed/20 rounded-button p-3 text-xs flex items-center justify-between">
+          <span class="text-textMuted">⚠️ يحتاج متابعة: <span class="font-bold text-coffee">${bottomEmployee.name}</span> (${bottomEmployee.role} — ${bottomEmployee.branch})</span>
+          <span class="font-bold" style="color:${gradeColor(bottomEmployee.avg)}">${bottomEmployee.avg}%</span>
+        </div>` : ''}
+
+        <!-- مخطط مقارنة الفروع -->
+        <div class="bg-white border border-borderWarm rounded-premium p-4 sm:p-5">
+          <h3 class="text-xs sm:text-sm font-bold text-coffee mb-3">🏪 مقارنة الأداء بين الفروع</h3>
+          <div class="relative w-full h-56"><canvas id="branchChartCanvas"></canvas></div>
+        </div>
+
+        <!-- مخطط مقارنة الفئات الوظيفية -->
+        <div class="bg-white border border-borderWarm rounded-premium p-4 sm:p-5">
+          <h3 class="text-xs sm:text-sm font-bold text-coffee mb-3">💼 مقارنة الأداء بين الفئات الوظيفية</h3>
+          <div class="relative w-full h-56"><canvas id="roleChartCanvas"></canvas></div>
+        </div>
+
+        <!-- مخطط أداء الموظفين -->
+        <div class="bg-white border border-borderWarm rounded-premium p-4 sm:p-5">
+          <h3 class="text-xs sm:text-sm font-bold text-coffee mb-3">👥 متوسط أداء كل موظف</h3>
+          <div class="relative w-full h-64"><canvas id="empChartCanvas"></canvas></div>
+        </div>
+
+        <!-- جدول الترتيب الكامل -->
+        <div class="bg-white border border-borderWarm rounded-premium p-4 sm:p-5">
+          <h3 class="text-xs sm:text-sm font-bold text-coffee mb-3">📋 جدول ترتيب الموظفين</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="border-b border-borderWarm text-textMuted">
+                  <th class="text-right py-2 px-2">#</th>
+                  <th class="text-right py-2 px-2">الاسم</th>
+                  <th class="text-right py-2 px-2">الفئة</th>
+                  <th class="text-right py-2 px-2">الفرع</th>
+                  <th class="text-center py-2 px-2">عدد التقييمات</th>
+                  <th class="text-center py-2 px-2">المتوسط</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${sortedEmps.map((e, i) => `
+                  <tr class="border-b border-borderWarm/50 hover:bg-foam transition-colors">
+                    <td class="py-2 px-2 font-bold text-textMuted">${i + 1}${i === 0 ? ' 🏆' : ''}</td>
+                    <td class="py-2 px-2 font-bold text-coffee">${e.name}</td>
+                    <td class="py-2 px-2 text-textMuted">${e.role}</td>
+                    <td class="py-2 px-2 text-textMuted">${e.branch}</td>
+                    <td class="py-2 px-2 text-center text-textMuted">${e.count}</td>
+                    <td class="py-2 px-2 text-center font-bold" style="color:${gradeColor(e.avg)}">${e.avg}%</td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>`;
+
+    // ── رسم المخططات ──
+    drawBarChart('branchChartCanvas', branches.map(b => b.name), branches.map(b => b.avg), '#2D7A4F');
+    drawBarChart('roleChartCanvas', roles.map(r => r.name), roles.map(r => r.avg), '#8B4513');
+    drawBarChart('empChartCanvas', sortedEmps.map(e => e.name), sortedEmps.map(e => e.avg), '#C8922A');
+  }
+
+  let dashChartInstances = {};
+  function drawBarChart(canvasId, labels, data, color) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    if (dashChartInstances[canvasId]) dashChartInstances[canvasId].destroy();
+
+    dashChartInstances[canvasId] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'متوسط الأداء (%)',
+          data: data,
+          backgroundColor: color,
+          borderColor: '#2C1810',
+          borderWidth: 1.5,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { font: { family: 'IBM Plex Sans Arabic', size: 10, weight: 'bold' }, color: '#2C1810' } }
+        },
+        scales: {
+          y: { beginAtZero: true, max: 100, grid: { color: 'rgba(44, 24, 16, 0.04)' }, ticks: { color: '#7A5C48', font: { size: 9 } } },
+          x: { grid: { display: false }, ticks: { color: '#7A5C48', font: { size: 9 } } }
+        }
+      }
+    });
+  }
+
+  // ── الأدوات المساعدة وواجهات المستخدم ─────────────────────────────────
+  function showLoadingOverlay(msg) {
+    document.getElementById('wait-message-holder').textContent = msg;
+    document.getElementById('global-wait-overlay').classList.remove('hidden');
+  }
+
+  function hideLoadingOverlay() {
+    document.getElementById('global-wait-overlay').classList.add('hidden');
+  }
+
+    function fireToast(msg, isError = false) {
+    const banner = document.getElementById('system-toast-notif');
+    if (!banner) return; // protection
+    banner.textContent = msg;
+    banner.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[400] px-6 py-3 rounded-button text-sm font-bold shadow-lg transition-all';
+    if (isError) {
+      banner.style.background = '#C0392B';
+      banner.style.color = '#fff';
+    } else {
+      banner.style.background = '#2C1810';
+      banner.style.color = '#F5EDD8';
+    }
+    banner.classList.add('show');
+    setTimeout(() => {
+      banner.classList.remove('show');
+    }, 3200);
+  }
+    
+    // تهيئة الألوان المسطحة والعصرية للرسالة المنبثقة
+    banner.className = 'toast-banner' + (isError ? ' bg-dangerRed text-white' : ' bg-coffee text-cream');
+    banner.classList.remove('hidden');
+    banner.classList.add('show');
+    
+    setTimeout(() => {
+      banner.classList.remove('show');
+      banner.classList.add('hidden');
+    }, 3200);
+  }
+</script><!-- ════════════════════════════════════════ -->
+<!-- شاشة تسجيل دخول المشرف -->
+<!-- ════════════════════════════════════════ -->
+<div id="supervisor-login-screen" class="fixed inset-0 bg-coffee/90 z-[300] flex items-center justify-center p-4">
+  <div class="bg-white border border-borderWarm w-full max-w-sm rounded-premium p-6 space-y-6 shadow-xl text-center">
+    <div class="w-16 h-16 mx-auto mb-2">
+      <img src="https://res.cloudinary.com/dr26mwbbx/image/upload/v1778529393/IMG_0212_p3klkw.png" class="w-full h-full object-contain rounded-full">
+    </div>
+    <div>
+      <h2 class="text-lg font-bold text-coffee">تسجيل دخول المشرف</h2>
+      <p class="text-xs text-textMuted mt-1">اختر اسمك وأدخل رمز الدخول</p>
+    </div>
+    
+    <div class="space-y-3">
+      <select id="supervisor-select" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-sm text-textDark focus:border-gold outline-none transition-all text-center">
+        <option value="">-- اختر اسم المشرف --</option>
+      </select>
+      <input type="password" id="supervisor-pin-input" maxlength="4" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-center text-2xl font-bold text-coffee tracking-[0.5em] focus:border-gold outline-none transition-all" placeholder="••••">
+    </div>
+    
+    <button class="w-full bg-coffee hover:bg-espresso text-cream font-bold py-3.5 rounded-button transition-all" onclick="loginSupervisor()">دخول للنظام</button>
+    
+    <p class="text-[10px] text-textMuted">لإضافة مشرفين جدود، تواصل مع الإدارة</p>
+  </div>
+</div><!-- Toast notification -->
+<div id="system-toast-notif" class="fixed top-4 left-1/2 -translate-x-1/2 z-[400] px-6 py-3 rounded-button text-sm font-bold shadow-lg transition-all opacity-0 pointer-events-none" style="background:#2C1810;color:#F5EDD8;"></div>
+<style>
+#system-toast-notif.show { opacity:1 !important; transform:translate(-50%, 0) !important; pointer-events:auto !important; }
+</style>
+
+</body>
+</html>
