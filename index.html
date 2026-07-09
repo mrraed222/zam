@@ -16,7 +16,9 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <script>
-  tailwind.config = {
+  tailwind.const CONFIG = {
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxF1e0fB9v-G_9WxA43-A6Hc4gKfC6r1LAl6nRbAECwYzIOgatWjElKhdRWycIhmrgtbQ/exec"
+};
     theme: {
       extend: {
         colors: {
@@ -560,15 +562,28 @@ async function syncSupervisorsToCloud() {
   <div class="bg-white border border-borderWarm w-full max-w-sm rounded-premium p-6 space-y-6 shadow-xl text-center">
     <div>
       <h2 class="text-lg font-bold text-coffee">الوصول للوحة الإدارة</h2>
-      <p class="text-xs text-textMuted mt-1">يرجى تأكيد رمز المرور الخاص بالإدارة لتعديل المعايير</p>
+      <p class="text-xs text-textMuted mt-1">أدخل رمز المرور ثم اختر القسم المطلوب</p>
     </div>
     
     <div class="space-y-2 text-right">
-      <label class="block text-xs font-semibold text-textMuted text-center">أدخل كلمة مرور الإدارة</label>
+      <label class="block text-xs font-semibold text-textMuted text-center">رمز المرور</label>
       <input type="password" id="admin-password-input" class="w-full px-4 py-3 bg-foam border border-borderWarm rounded-button text-center text-xl font-bold text-coffee tracking-widest focus:border-gold outline-none transition-all" placeholder="••••">
     </div>
     
-    <div class="flex gap-3">
+    <!-- الأزرار الثلاثة تظهر بعد التحقق -->
+    <div id="admin-menu-buttons" class="hidden space-y-3">
+      <button onclick="openAdminSection('criteria')" class="w-full bg-coffee hover:bg-espresso text-cream font-bold py-3 rounded-button transition-all text-sm flex items-center justify-center gap-2">
+        ⚙️ إعداد وإدارة صفحات التقييم
+      </button>
+      <button onclick="openAdminSection('dashboard')" class="w-full bg-gold hover:bg-gold/90 text-white font-bold py-3 rounded-button transition-all text-sm flex items-center justify-center gap-2">
+        📊 الداشبورد والإحصائيات
+      </button>
+      <button onclick="openAdminSection('supervisors')" class="w-full bg-successGreen hover:bg-successGreen/90 text-white font-bold py-3 rounded-button transition-all text-sm flex items-center justify-center gap-2">
+        🔐 إدارة صلاحيات الدخول
+      </button>
+    </div>
+    
+    <div class="flex gap-3" id="admin-verify-row">
       <button class="flex-1 border border-borderWarm hover:bg-foam text-textMuted font-bold py-3 rounded-button transition-all text-sm" onclick="dismissAdminLock()">إلغاء</button>
       <button class="flex-1 bg-coffee hover:bg-espresso text-cream font-bold py-3 rounded-button transition-all text-sm" onclick="verifyAdminGate()">تأكيد الدخول</button>
     </div>
@@ -587,13 +602,14 @@ async function syncSupervisorsToCloud() {
       <button class="border border-borderWarm hover:bg-foam text-textMuted px-4 py-2 rounded-button text-xs font-bold transition-all" onclick="dismissAdminPanel()">إغلاق وحفظ</button>
     </div>
 
-    <!-- ألسنة التبويبات للفرز والداشبورد -->
+       <!-- ألسنة التبويبات للفرز والداشبورد -->
     <div class="flex flex-col sm:flex-row gap-2 bg-foam p-1.5 rounded-premium">
       <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all bg-white shadow-sm text-coffee" onclick="switchAdminWorkspace('barista', this)">☕ باريستا/كاشير</button>
       <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white" onclick="switchAdminWorkspace('waiter', this)">🍽️ ويتر</button>
       <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white" onclick="switchAdminWorkspace('kitchen', this)">👨‍🍳 المطبخ</button>
       <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white" onclick="switchAdminWorkspace('supervisor', this)">🧑‍💼 المشرفين</button>
       <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white border border-gold/30 bg-gold/5" onclick="loadPerformanceAnalytics(this)">📊 الداشبورد</button>
+      <button class="admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white" onclick="openSupervisorManagementTab(this)">🔐 إدارة المشرفين</button>
     </div>
 
     <!-- حاوية عرض البنود أو الرسوم البيانية -->
@@ -627,10 +643,6 @@ async function syncSupervisorsToCloud() {
 </div>
 
 <script>
-  // ── تهيئة الرابط السحابي وعلاقة ربط السكربت ─────────────────────────
-  const CONFIG = {
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxF1e0fB9v-G_9WxA43-A6Hc4gKfC6r1LAl6nRbAECwYzIOgatWjElKhdRWycIhmrgtbQ/exec"
-  };
 
   // مصفوفة نصوص التقدير اللحظي المقابل لتقييم (1-10)
   const SCORE_GRADES_10 = {
@@ -1402,18 +1414,50 @@ ${data.strengths ? `⭐ *نقاط القوة:*\n${data.strengths}\n\n` : ''}${da
     document.getElementById('admin-password-input').focus();
   }
 
-  function dismissAdminLock() {
+   function dismissAdminLock() {
     document.getElementById('admin-security-overlay').classList.add('hidden');
+    // إعادة تعيين شاشة الأمان
+    document.getElementById('admin-menu-buttons').classList.add('hidden');
+    document.getElementById('admin-verify-row').classList.remove('hidden');
+    document.getElementById('admin-password-input').disabled = false;
+    document.getElementById('admin-password-input').value = '';
   }
 
   function verifyAdminGate() {
     const input = document.getElementById('admin-password-input').value;
     if (input === '2026') {
-      dismissAdminLock();
-      presentAdminPanel();
+      // إظهار الأزرار وإخفاء زر التأكيد
+      document.getElementById('admin-menu-buttons').classList.remove('hidden');
+      document.getElementById('admin-verify-row').classList.add('hidden');
+      document.getElementById('admin-password-input').disabled = true;
     } else {
       fireToast('رمز التحقق غير صحيح، حاول مرة أخرى', true);
     }
+  }  function openAdminSection(section) {
+    dismissAdminLock(); // إغلاق شاشة الأمان
+    
+    if (section === 'criteria') {
+      presentAdminPanel(); // اللوحة الحالية (بنود التقييم)
+    } else if (section === 'dashboard') {
+      presentAdminPanel(); // افتح اللوحة وروح للداشبورد
+      setTimeout(() => {
+        const dashBtn = document.querySelector('.admin-tab-btn[onclick*="loadPerformanceAnalytics"]');
+        if (dashBtn) dashBtn.click();
+      }, 100);
+    } else if (section === 'supervisors') {
+      presentAdminPanel(); // افتح اللوحة وروح لإدارة المشرفين
+      setTimeout(() => {
+        const supBtn = document.querySelector('.admin-tab-btn[onclick*="openSupervisorManagementTab"]');
+        if (supBtn) supBtn.click();
+      }, 100);
+    }
+  }  function openSupervisorManagementTab(btnEl) {
+    const tabs = document.querySelectorAll('.admin-tab-btn');
+    tabs.forEach(t => {
+      t.className = 'admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white';
+    });
+    btnEl.className = 'admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-coffee transition-all bg-white shadow-sm';
+    openSupervisorManagement();
   }
 
   // ── فتح وبناء لوحة الإدارة المعدلة كلياً ──────────────────────────────
@@ -1846,9 +1890,23 @@ ${data.strengths ? `⭐ *نقاط القوة:*\n${data.strengths}\n\n` : ''}${da
     document.getElementById('global-wait-overlay').classList.add('hidden');
   }
 
-  function fireToast(msg, isError = false) {
+    function fireToast(msg, isError = false) {
     const banner = document.getElementById('system-toast-notif');
+    if (!banner) return; // protection
     banner.textContent = msg;
+    banner.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[400] px-6 py-3 rounded-button text-sm font-bold shadow-lg transition-all';
+    if (isError) {
+      banner.style.background = '#C0392B';
+      banner.style.color = '#fff';
+    } else {
+      banner.style.background = '#2C1810';
+      banner.style.color = '#F5EDD8';
+    }
+    banner.classList.add('show');
+    setTimeout(() => {
+      banner.classList.remove('show');
+    }, 3200);
+  }
     
     // تهيئة الألوان المسطحة والعصرية للرسالة المنبثقة
     banner.className = 'toast-banner' + (isError ? ' bg-dangerRed text-white' : ' bg-coffee text-cream');
@@ -1884,6 +1942,11 @@ ${data.strengths ? `⭐ *نقاط القوة:*\n${data.strengths}\n\n` : ''}${da
     
     <p class="text-[10px] text-textMuted">لإضافة مشرفين جدود، تواصل مع الإدارة</p>
   </div>
-</div>
+</div><!-- Toast notification -->
+<div id="system-toast-notif" class="fixed top-4 left-1/2 -translate-x-1/2 z-[400] px-6 py-3 rounded-button text-sm font-bold shadow-lg transition-all opacity-0 pointer-events-none" style="background:#2C1810;color:#F5EDD8;"></div>
+<style>
+#system-toast-notif.show { opacity:1 !important; transform:translate(-50%, 0) !important; pointer-events:auto !important; }
+</style>
+
 </body>
 </html>
