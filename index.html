@@ -13,11 +13,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- استدعاء مكتبة Tailwind CSS للتصميم العصري التفاعلي -->
-<script src="https://cdn.tailwindcss.com">
-  
-</script>
+<script src="https://cdn.tailwindcss.com"></script>
 
- <script>
+<script>
   tailwind.config = {
     theme: {
       extend: {
@@ -48,6 +46,7 @@
     SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxF1e0fB9v-G_9WxA43-A6Hc4gKfC6r1LAl6nRbAECwYzIOgatWjElKhdRWycIhmrgtbQ/exec"
   };
 </script>
+
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
 // نظام المشرفين والصلاحيات — Zam Supervisor Auth System
@@ -354,12 +353,13 @@ async function syncSupervisorsToCloud() {
 
 /* ════ طباعة PDF ════ */
 @media print {
-  body > *                          { display: none !important; }
+  body > * { display: none !important; }
   #pdf-print-frame                  { display: block !important; }
-  #pdf-print-frame *                { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  #pdf-print-frame * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 #pdf-print-frame { display: none; }
 </style>
+<base target="_blank">
 </head>
 <body class="bg-canvasBg text-textDark min-height-screen flex justify-center items-start py-8 px-4 sm:px-6">
 
@@ -1440,7 +1440,9 @@ ${data.strengths ? `⭐ *نقاط القوة:*\n${data.strengths}\n\n` : ''}${da
     } else {
       fireToast('رمز التحقق غير صحيح، حاول مرة أخرى', true);
     }
-  }  function openAdminSection(section) {
+  }  
+  
+  function openAdminSection(section) {
     dismissAdminLock(); // إغلاق شاشة الأمان
     
     if (section === 'criteria') {
@@ -1458,7 +1460,9 @@ ${data.strengths ? `⭐ *نقاط القوة:*\n${data.strengths}\n\n` : ''}${da
         if (supBtn) supBtn.click();
       }, 100);
     }
-  }  function openSupervisorManagementTab(btnEl) {
+  }  
+  
+  function openSupervisorManagementTab(btnEl) {
     const tabs = document.querySelectorAll('.admin-tab-btn');
     tabs.forEach(t => {
       t.className = 'admin-tab-btn flex-1 text-center py-2.5 rounded-button text-xs font-bold text-textMuted transition-all hover:bg-white';
@@ -1897,35 +1901,25 @@ ${data.strengths ? `⭐ *نقاط القوة:*\n${data.strengths}\n\n` : ''}${da
     document.getElementById('global-wait-overlay').classList.add('hidden');
   }
 
-    function fireToast(msg, isError = false) {
+  function fireToast(msg, isError = false) {
     const banner = document.getElementById('system-toast-notif');
     if (!banner) return; // protection
+    
     banner.textContent = msg;
-    banner.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[400] px-6 py-3 rounded-button text-sm font-bold shadow-lg transition-all';
-    if (isError) {
-      banner.style.background = '#C0392B';
-      banner.style.color = '#fff';
-    } else {
-      banner.style.background = '#2C1810';
-      banner.style.color = '#F5EDD8';
-    }
-    banner.classList.add('show');
-    setTimeout(() => {
-      banner.classList.remove('show');
-    }, 3200);
-  }
-    
     // تهيئة الألوان المسطحة والعصرية للرسالة المنبثقة
-    banner.className = 'toast-banner' + (isError ? ' bg-dangerRed text-white' : ' bg-coffee text-cream');
-    banner.classList.remove('hidden');
+    banner.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[400] px-6 py-3 rounded-button text-sm font-bold shadow-lg transition-all ' + (isError ? 'bg-dangerRed text-white' : 'bg-coffee text-cream');
+    
+    banner.classList.remove('opacity-0', 'pointer-events-none');
     banner.classList.add('show');
     
     setTimeout(() => {
       banner.classList.remove('show');
-      banner.classList.add('hidden');
+      banner.classList.add('opacity-0', 'pointer-events-none');
     }, 3200);
   }
-</script><!-- ════════════════════════════════════════ -->
+</script>
+
+<!-- ════════════════════════════════════════ -->
 <!-- شاشة تسجيل دخول المشرف -->
 <!-- ════════════════════════════════════════ -->
 <div id="supervisor-login-screen" class="fixed inset-0 bg-coffee/90 z-[300] flex items-center justify-center p-4">
@@ -1949,7 +1943,9 @@ ${data.strengths ? `⭐ *نقاط القوة:*\n${data.strengths}\n\n` : ''}${da
     
     <p class="text-[10px] text-textMuted">لإضافة مشرفين جدود، تواصل مع الإدارة</p>
   </div>
-</div><!-- Toast notification -->
+</div>
+
+<!-- Toast notification -->
 <div id="system-toast-notif" class="fixed top-4 left-1/2 -translate-x-1/2 z-[400] px-6 py-3 rounded-button text-sm font-bold shadow-lg transition-all opacity-0 pointer-events-none" style="background:#2C1810;color:#F5EDD8;"></div>
 <style>
 #system-toast-notif.show { opacity:1 !important; transform:translate(-50%, 0) !important; pointer-events:auto !important; }
